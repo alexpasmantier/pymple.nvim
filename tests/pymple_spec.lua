@@ -1,0 +1,5 @@
+describe("pymple", function()
+  it("can be required", function()
+    require("pymple")
+  end)
+end)

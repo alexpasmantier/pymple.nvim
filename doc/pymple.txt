@@ -1,0 +1,16 @@
+===============================================================================
+								    pymple.nvim
+
+This plugin attempts to provide missing utilities when working with Python
+inside Neovim.
+
+These utilities include:
+- automatic renaming of imports when renaming/moving a file or a folder
+- automatic symbol import resolution based on your current workspace and
+  installed python packages
+- automatic and configurable creation of test files that mirror your project
+  structure
+
+See examples below.
+
+vim:tw=79:ts=8:ft=help:norl:
