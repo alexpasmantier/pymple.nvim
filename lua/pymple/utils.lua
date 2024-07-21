@@ -47,9 +47,11 @@ end
 
 ---@param path string: The path to the file
 ---@return boolean: Whether or not the file is a python file
-function M.is_python_file(path)
+local function is_python_file(path)
   return filetype.detect(path, {}) == "python"
 end
+
+M.is_python_file = is_python_file
 
 ---@param path string: The path to the directory
 ---@return boolean: Whether or not the directory contains python files
@@ -61,8 +63,7 @@ function M.recursive_dir_contains_python_files(path)
       if M.recursive_dir_contains_python_files(full_path) then
         return true
       end
-    elseif M.is_python_file(full_path) then
-      -- vim.fn.writefile({ "IS PYTHON FILE" }, "/tmp/neotree.log", "a")
+    elseif is_python_file(full_path) then
       return true
     end
   end
@@ -71,7 +72,7 @@ end
 
 ---@param buf number: The buffer number
 ---@return number | nil: The height (in lines) of the docstring
-function M.find_docstring_end_line_number(buf)
+local function find_docstring_end_line_number(buf)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   -- if the first line does not contain a docstring, return 0
   if not lines[1]:match('^"""') then
@@ -91,7 +92,7 @@ end
 ---@param import_path string: The import path to be added
 ---@param symbol string: The symbol to be imported
 function M.add_import_to_current_buf(import_path, symbol)
-  local docstring_height = M.find_docstring_end_line_number(0)
+  local docstring_height = find_docstring_end_line_number(0)
   local insert_on_line
   if docstring_height == 0 then
     insert_on_line = 0

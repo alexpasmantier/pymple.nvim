@@ -2,6 +2,7 @@ local M = {}
 
 local utils = require("pymple.utils")
 local config = require("pymple.config")
+local jobs = require("pymple.jobs")
 
 -- classes, functions, and variables
 local class_pattern = [['^class\s+%s\b']]
@@ -25,12 +26,13 @@ function M.resolve_python_import()
   end
   local symbol = vim.fn.expand("<cword>")
 
-  local command_args = { "-f", "-t", "py" }
+  local command_args = { "-f", "-t", "py", "-C" }
   for _, pattern in ipairs(IMPORTABLE_SYMBOLS_PATTERNS) do
     table.insert(command_args, "-e")
     table.insert(command_args, string.format(pattern, symbol))
   end
   table.insert(command_args, ".")
+  jobs.resolve_import(symbol, { command_args = command_args })
 end
 
 return M

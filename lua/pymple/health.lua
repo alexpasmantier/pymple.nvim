@@ -32,6 +32,7 @@ local optional_dependencies = {
 
 local required_plugins = {
   { lib = "plenary", optional = false },
+  { lib = "neo-tree", optional = true },
 }
 
 local check_binary_installed = function(package)
@@ -84,12 +85,20 @@ M.check = function()
       if not installed then
         local err_msg = ("%s: not found."):format(package.name)
         if package.optional then
-          warn(("%s %s"):format(err_msg, ("Install %s for extended capabilities"):format(package.url)))
+          warn(
+            ("%s %s"):format(
+              err_msg,
+              ("Install %s for extended capabilities"):format(package.url)
+            )
+          )
         else
           error(
             ("%s %s"):format(
               err_msg,
-              ("`%s` finder will not function without %s installed."):format(opt_dep.finder_name, package.url)
+              ("`%s` finder will not function without %s installed."):format(
+                opt_dep.finder_name,
+                package.url
+              )
             )
           )
         end
@@ -98,26 +107,6 @@ M.check = function()
         local ver = eol and version:sub(0, eol - 1) or "(unknown version)"
         ok(("%s: found %s"):format(package.name, ver))
       end
-    end
-  end
-
-  -- Extensions
-  start("===== Installed extensions =====")
-
-  local installed = {}
-  for extension_name, _ in pairs(extension_info) do
-    installed[#installed + 1] = extension_name
-  end
-  table.sort(installed)
-
-  for _, installed_ext in ipairs(installed) do
-    local extension_healthcheck = extension_module._health[installed_ext]
-
-    start(string.format("Telescope Extension: `%s`", installed_ext))
-    if extension_healthcheck then
-      extension_healthcheck()
-    else
-      info("No healthcheck provided")
     end
   end
 end
