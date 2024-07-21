@@ -19,6 +19,16 @@ local optional_dependencies = {
     },
   },
   {
+    functionality = "resolve_imports",
+    package = {
+      {
+        name = "gg",
+        url = "[alexpasmantier/grip-grab](https://github.com/alexpasmantier/grip-grab)",
+        optional = false,
+      },
+    },
+  },
+  {
     functionality = "update_imports",
     package = {
       {
@@ -95,8 +105,8 @@ M.check = function()
           error(
             ("%s %s"):format(
               err_msg,
-              ("`%s` finder will not function without %s installed."):format(
-                opt_dep.finder_name,
+              ("Functionality `%s` will not work without %s installed."):format(
+                opt_dep.functionality,
                 package.url
               )
             )

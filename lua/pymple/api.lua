@@ -14,6 +14,7 @@ end
 ---@param source string: The path to the source file/dir (before renaming/moving)
 ---@param destination string: The path to the destination file/dir (after renaming/moving)
 M.update_imports = function(source, destination)
+  P("update imports")
   update_imports.update_imports(source, destination)
 end
 
