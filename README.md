@@ -71,6 +71,7 @@ If something's not working as expected, please start by running `checkhealth` in
 ```vim
 :checkhealth pymple
 ```
+<img width="846" alt="Screenshot 2024-07-22 at 13 20 27" src="https://github.com/user-attachments/assets/e9c32971-d679-437d-9d08-114b349569ff">
 
 
 If that doesn't help, feel free to open an issue.
