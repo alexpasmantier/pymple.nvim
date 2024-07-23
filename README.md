@@ -44,21 +44,26 @@ The configuration is currently quite limited, but you can change the following o
 config = {
   -- automatically register the following keymaps on plugin setup
   keymaps = {
-    resolve_import = {  -- resolve import under cursor when pressing <leader>li
+    -- Resolves import for symbol under cursor.
+    -- This will automatically find and add the corresponding import to the top of
+    -- the file (below any existing doctsring)
+    add_import_for_symbol_under_cursor = {
       keys = "<leader>li",  -- feel free to change this to whatever you like
-      desc = "Resolve import under cursor" 
+      desc = "Resolve import under cursor", -- description for the keymap
     },
   },
   -- automatically create the following user commands on plugin setup
   create_user_commands = {
-    update_imports = true,  -- update all workspace imports after moving/renaming a file
-                            -- this takes two arguments (old_path, new_path)
-                            -- and can be called as ":UpdatePythonImports old_path new_path"
-    resolve_imports = true, -- resolve import for symbol under cursor and add it to the top
-                            -- of the current buffer. 
-                            -- This will usually be hooked up by pymple on setup to your file 
-                            -- explorer's events and get triggered automatically when you move
-                            -- or rename a file or a folder.
+    -- Update all workspace imports after moving/renaming a file.
+    -- This takes two arguments (old_path, new_path)
+    -- and can be called as ":UpdatePythonImports old_path new_path"
+    update_imports = true,
+    -- Resolve import for symbol under cursor and add it to the top
+    -- of the current buffer.
+    -- This will usually be hooked up by pymple on setup to your file
+    -- explorer's events and get triggered automatically when you move
+    -- or rename a file or a folder.
+    add_import_for_symbol_under_cursor = true,
   },
 }
 ```

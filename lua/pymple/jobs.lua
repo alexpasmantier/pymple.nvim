@@ -4,6 +4,23 @@ local Job = require("plenary.job")
 local utils = require("pymple.utils")
 local config = require("pymple.config")
 
+---@class Job
+---@field command string Command to run
+---@field args? string[] List of arguments to pass
+---@field cwd? string Working directory for job
+---@field env? table<string, string>|string[] Environment looking like: { ['VAR'] = 'VALUE' } or { 'VAR=VALUE' }
+---@field interactive? boolean
+---@field detached? boolean Spawn the child in a detached state making it a process group leader
+---@field skip_validation? boolean Skip validating the arguments
+---@field enable_handlers? boolean If set to false, disables all callbacks associated with output (default: true)
+---@field enabled_recording? boolean
+---@field on_start? fun()
+---@field on_stdout? fun(error: string, data: string, self?: Job)
+---@field on_stderr? fun(error: string, data: string, self?: Job)
+---@field on_exit? fun(self: Job, code: number, signal: number)
+---@field maximum_results? number Stop processing results after this number
+---@field writer? Job|table|string Job that writes to stdin of this job.
+
 ---@alias gg_json_search_result {line_number: number, line: string}
 ---@alias gg_json_search_results gg_json_search_result[]
 ---@alias gg_json_result {path: string, results: gg_json_search_results}
@@ -89,70 +106,53 @@ function M.gg_into_sed(gg_args, sed_args, range)
   }):start()
 end
 
----Searches for a definition of a given symbol and automatically adds the import
----to the top of the current buffer
----@param symbol string: the symbol for which to resolve an import
----@param opts {command_args: string[]}
-function M.resolve_import(symbol, opts)
-  Job
-    :new({
-      command = utils.SHELL,
-      args = { "-c", "gg " .. table.concat(opts.command_args, " ") },
-      on_exit = function(job, _)
-        local results = job:result()
-        if #results == 0 then
-          vim.schedule(function()
-            vim.api.nvim_echo({
-              {
-                "No results found in current workdir",
-                config.HL_GROUPS.Error,
-              },
-            }, false, {})
-          end)
-          return
-        elseif #results == 1 then
-          vim.schedule(function()
-            local path = string.gsub(results[1], "^%./", "")
-            local import_path = utils.to_import_path(path)
-            utils.add_import_to_current_buf(
-              utils.to_import_path(import_path),
-              symbol
-            )
-          end)
-          return
+---Finds import candidates in workspace
+---@param args string[]: The args to search for
+---@return string[]: The import candidates
+function M.find_import_candidates_in_workspace(args)
+  local candidates = {}
+  local job = Job:new({
+    command = utils.SHELL,
+    args = { "-c", "gg " .. table.concat(args, " ") },
+    on_exit = function(job, _)
+      local results = job:result()
+      if #results ~= 0 then
+        for _, result in ipairs(results) do
+          table.insert(candidates, result)
         end
-        local potential_imports = {}
-        for _, line in ipairs(results) do
-          local path = string.gsub(line, "^%./", "")
-          local import_path = utils.to_import_path(path)
-          table.insert(potential_imports, import_path)
-        end
-        -- sort imports by length
-        table.sort(potential_imports, function(a, b)
-          return #a < #b
-        end)
+      end
+    end,
+  })
+  job:sync()
+  return candidates
+end
 
-        local message = {}
-        for i, import_path in ipairs(potential_imports) do
-          table.insert(message, string.format("%s: ", i) .. import_path)
+---Finds import candidates in venv
+---@param args Target: The args to search for
+---@param site_packages_location string: The location of the site packages
+---@return string[]: The import candidates
+function M.find_import_candidates_in_venv(args, site_packages_location)
+  local candidates = {}
+  local prefix = site_packages_location .. "/"
+  local job = Job:new({
+    command = utils.SHELL,
+    args = { "-c", "gg " .. table.concat(args, " ") },
+    on_exit = function(job, _)
+      local results = job:result()
+      if #results ~= 0 then
+        for _, result in ipairs(results) do
+          local result = (result:sub(0, #prefix) == prefix)
+              and result:sub(#prefix + 1)
+            or result
+          P(result)
+          P(site_packages_location)
+          table.insert(candidates, result)
         end
-        vim.schedule(function()
-          local user_input =
-            vim.fn.input(table.concat(message, "\n") .. "\nSelect an import: ")
-          local chosen_import = potential_imports[tonumber(user_input)]
-          if chosen_import then
-            utils.add_import_to_current_buf(chosen_import, symbol)
-          else
-            vim.api.nvim_echo(
-              { { "Invalid selection", config.HL_GROUPS.Error } },
-              false,
-              {}
-            )
-          end
-        end)
-      end,
-    })
-    :start()
+      end
+    end,
+  })
+  job:sync()
+  return candidates
 end
 
 return M

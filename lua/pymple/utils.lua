@@ -108,4 +108,31 @@ function M.add_import_to_current_buf(import_path, symbol)
   )
 end
 
+---Get the path to the current virtual environment, or nil if we can't find one
+---@return string | nil: The path to the current virtual environment
+function M.get_virtual_environment()
+  local venv = os.getenv("VIRTUAL_ENV")
+  if venv then
+    return venv
+  end
+  local venv_path = vim.fn.getcwd() .. "/.venv"
+  if vim.fn.isdirectory(venv_path) == 1 then
+    return venv_path
+  end
+  return nil
+end
+
+---Get the path to the site packages directory
+---@return string | nil: The path to the site packages directory
+function M.get_site_packages_location()
+  local result = vim.fn.system(
+    "python -c 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'"
+  )
+  local location = result:gsub("\n", "")
+  if vim.fn.isdirectory(location) == 1 then
+    return location
+  end
+  return nil
+end
+
 return M

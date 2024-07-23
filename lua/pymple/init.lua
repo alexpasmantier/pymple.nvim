@@ -14,17 +14,24 @@ local function setup(opts)
     vim.api.nvim_create_user_command("UpdatePythonImports", function(args)
       require("pymple.api").update_imports(args.fargs[1], args.fargs[2])
     end, {
-      desc = "Update all imports in workspace after renaming `source` to `destination`",
+      desc = [[Update all imports in workspace after renaming `source` to
+      `destination`]],
       nargs = "+",
     })
   end
 
-  if opts.create_user_commands.resolve_imports then
-    vim.api.nvim_create_user_command("ResolvePythonImport", function(_)
-      require("pymple.api").resolve_import()
-    end, {
-      desc = "Resolves import for symbol under cursor",
-    })
+  if opts.create_user_commands.add_import_for_symbol_under_cursor then
+    vim.api.nvim_create_user_command(
+      "PympleAddImportForSymbolUnderCursor",
+      function(_)
+        require("pymple.api").add_import_for_symbol_under_cursor()
+      end,
+      {
+        desc = [[Resolves import for symbol under cursor. This will
+        automatically find and add the corresponding import to the top of the
+        file (below any existing doctsring)]],
+      }
+    )
   end
 
   keymaps.setup_keymaps(opts.keymaps)
