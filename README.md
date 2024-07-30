@@ -3,7 +3,7 @@ All your missing Python IDE features for Neovim.
 
 ## ⚡️ Requirements
 - the [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) lua package
-- the [grip-grab](https://github.com/alexpasmantier/grip-grab) rust search utility (>= 0.2.5)
+- the [grip-grab](https://github.com/alexpasmantier/grip-grab) rust search utility (>= 0.2.16)
 - a working version of [sed](https://www.gnu.org/software/sed/)
 
 ## 📦 Installation
@@ -65,6 +65,12 @@ config = {
     -- or rename a file or a folder.
     add_import_for_symbol_under_cursor = true,
   },
+  -- options for the update imports feature
+  update_imports = {
+    -- the filetypes on which to run the update imports command
+    -- NOTE: this should at least include "python" for the plugin to actually do anything useful
+    filetypes = { "python", "markdown" },
+  }
 }
 ```
 

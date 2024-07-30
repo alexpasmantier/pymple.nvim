@@ -8,6 +8,17 @@ local jobs = require("pymple.jobs")
 local SPLIT_IMPORT_REGEX =
   [[from\s+%s\s+import\s+\(?\n?[\sa-zA-Z0-9_,\n]+\)?\s*$]]
 
+---@param filetypes string[]
+---@return string[]
+local function build_filetypes_args(filetypes)
+  local args = {}
+  for _, filetype in ipairs(filetypes) do
+    table.insert(args, "-t")
+    table.insert(args, filetype)
+  end
+  return args
+end
+
 --[[
 from path.to.dir import file
 from path.to.dir import (
@@ -18,7 +29,8 @@ from path.to.file import Something
 --]]
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
-local function update_imports_split(source, destination)
+---@param filetypes string[]: The filetypes to update imports for
+local function update_imports_split(source, destination, filetypes)
   local cwd = vim.fn.getcwd()
 
   local source_relative = Path:new(source):make_relative(cwd)
@@ -37,10 +49,7 @@ local function update_imports_split(source, destination)
   local gg_args_split = {
     "--json",
     "-U",
-    "-t",
-    "py",
-    "-t",
-    "md",
+    table.concat(build_filetypes_args(filetypes), " "),
     string.format(
       "'%s'",
       SPLIT_IMPORT_REGEX:format(utils.escape_import_path(source_base_path))
@@ -74,7 +83,8 @@ from path.to.dir import (
 ]]
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
-local function update_imports_monolithic(source, destination)
+---@param filetypes string[]: The filetypes to update imports for
+local function update_imports_monolithic(source, destination, filetypes)
   local cwd = vim.fn.getcwd()
 
   -- path/to/here
@@ -87,10 +97,7 @@ local function update_imports_monolithic(source, destination)
 
   local gg_args = {
     "--json",
-    "-t",
-    "py",
-    "-t",
-    "md",
+    table.concat(build_filetypes_args(filetypes), " "),
     string.format("'%s'", utils.escape_import_path(source_import_path)),
     ".",
   }
@@ -106,12 +113,13 @@ end
 
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
-function M.update_imports(source, destination)
+---@param filetypes string[]: The filetypes to update imports for
+function M.update_imports(source, destination, filetypes)
   if utils.is_python_file(source) and utils.is_python_file(destination) then
-    update_imports_split(source, destination)
-    update_imports_monolithic(source, destination)
+    update_imports_split(source, destination, filetypes)
+    update_imports_monolithic(source, destination, filetypes)
   elseif utils.recursive_dir_contains_python_files(destination) then
-    update_imports_monolithic(source, destination)
+    update_imports_monolithic(source, destination, filetypes)
   end
   utils.async_refresh_buffers(DEFAULT_HANG_TIME)
 end

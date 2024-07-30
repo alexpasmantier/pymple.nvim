@@ -26,12 +26,20 @@ local default_user_command_options = {
   add_import_for_symbol_under_cursor = true,
 }
 
----@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions }
+---@alias UpdateImportsOptions { filetypes: string[]}
+
+---@type UpdateImportsOptions
+local default_update_imports_options = {
+  filetypes = { "python", "markdown" },
+}
+
+---@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions, update_imports: UpdateImportsOptions }
 
 ---@type Config
 M.default_config = {
   keymaps = default_keymaps,
   create_user_commands = default_user_command_options,
+  update_imports = default_update_imports_options,
 }
 
 return M

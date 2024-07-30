@@ -135,4 +135,17 @@ function M.get_site_packages_location()
   return nil
 end
 
+---Check if a table contains a specific entry
+---@param tbl table: The table to check
+---@param entry any: The entry to check for
+---@return boolean: Whether or not the table contains the entry
+function M.table_contains(tbl, entry)
+  for key, value in pairs(tbl) do
+    if key == entry or value == entry then
+      return true
+    end
+  end
+  return false
+end
+
 return M

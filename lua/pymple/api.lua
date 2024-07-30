@@ -49,7 +49,8 @@ end
 ---Update all imports in workspace after renaming `source` to `destination`
 ---@param source string: The path to the source file/dir (before renaming/moving)
 ---@param destination string: The path to the destination file/dir (after renaming/moving)
-M.update_imports = function(source, destination)
+---@param opts UpdateImportsOptions: Options for updating imports
+M.update_imports = function(source, destination, opts)
   update_imports.update_imports(source, destination)
 end
 
