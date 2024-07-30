@@ -55,12 +55,12 @@ M.is_python_file = is_python_file
 
 ---@param path string: The path to the directory
 ---@return boolean: Whether or not the directory contains python files
-function M.recursive_dir_contains_python_files(path)
+local function recursive_dir_contains_python_files(path)
   local files = vim.fn.readdir(path)
   for _, file in ipairs(files) do
     local full_path = path .. "/" .. file
     if vim.fn.isdirectory(full_path) == 1 then
-      if M.recursive_dir_contains_python_files(full_path) then
+      if recursive_dir_contains_python_files(full_path) then
         return true
       end
     elseif is_python_file(full_path) then
@@ -69,6 +69,8 @@ function M.recursive_dir_contains_python_files(path)
   end
   return false
 end
+
+M.recursive_dir_contains_python_files = recursive_dir_contains_python_files
 
 ---@param buf number: The buffer number
 ---@return number | nil: The height (in lines) of the docstring
