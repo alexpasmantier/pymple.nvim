@@ -4,6 +4,7 @@ local utils = require("pymple.utils")
 local config = require("pymple.config")
 local jobs = require("pymple.jobs")
 local Path = require("plenary.path")
+local print_err = require("pymple.utils").print_err
 
 -- classes, functions, and variables
 local class_pattern = [['^class\s+%s\b']]
@@ -28,14 +29,10 @@ local function add_symbol_regexes(args, symbol)
 end
 
 ---@param symbol string: the symbol for which to resolve an import
----@return table | nil: list of candidates
+---@return string[] | nil: list of candidates
 function M.resolve_python_import(symbol)
   if not utils.is_python_file(vim.fn.expand("%")) then
-    vim.api.nvim_echo(
-      { { "Not a python file", config.HL_GROUPS.Error } },
-      false,
-      {}
-    )
+    print_err("Not a python file")
     return
   end
   local cwd = vim.fn.getcwd()

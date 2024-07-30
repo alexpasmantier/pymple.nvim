@@ -21,7 +21,8 @@ local config = require("pymple.config")
 ---@field maximum_results? number Stop processing results after this number
 ---@field writer? Job|table|string Job that writes to stdin of this job.
 
----@alias gg_json_search_result {line_number: number, line: string}
+---@alias gg_json_matches {start: number, end: number}
+---@alias gg_json_search_result {line_number: number, line: string, line_start: number, line_end: number, matches: gg_json_matches[]}
 ---@alias gg_json_search_results gg_json_search_result[]
 ---@alias gg_json_result {path: string, results: gg_json_search_results}
 ---@alias gg_json_results gg_json_result[]
@@ -54,14 +55,11 @@ local function ranged_sed(gg_job_results, sed_args)
   local matches = {}
   for _, file_result in ipairs(gg_job_results) do
     for _, search_result in ipairs(file_result.results) do
-      -- gsub returns the number of replaced occurences as a second element
-      local additional_line_count = select(2, search_result.line:gsub("\n", ""))
-        - 1
       table.insert(matches, {
         path = file_result.path,
         lines = {
-          search_result.line_number,
-          search_result.line_number + additional_line_count,
+          search_result.line_start,
+          search_result.line_end,
         },
       })
     end

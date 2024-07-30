@@ -4,27 +4,33 @@ local resolve_imports = require("pymple.resolve_imports")
 local update_imports = require("pymple.update_imports")
 local config = require("pymple.config")
 local utils = require("pymple.utils")
+local print_err = utils.print_err
+local print_info = utils.print_info
+local log = require("pymple.log")
 
 ---Resolves import for symbol under cursor.
 ---This will automatically find and add the corresponding import to the top of
 ---the file (below any existing doctsring)
 M.add_import_for_symbol_under_cursor = function()
   local symbol = vim.fn.expand("<cword>")
+  if symbol == "" then
+    print_err("No symbol found under cursor")
+    return
+  end
+  log.debug("Symbol under cursor: " .. symbol)
+
   local candidates = resolve_imports.resolve_python_import(symbol)
+  log.debug("Candidates: " .. vim.inspect(candidates))
 
   if candidates == nil then
     return
   end
   if #candidates == 0 then
-    vim.api.nvim_echo({
-      {
-        "No results found in current workdir",
-        config.HL_GROUPS.Error,
-      },
-    }, false, {})
+    print_err("No results found in workdir for the current symbol")
     return
   elseif #candidates == 1 then
     utils.add_import_to_current_buf(candidates[1], symbol)
+    print_info("Added import for " .. symbol .. ": " .. candidates[1])
     return
   end
 
@@ -37,12 +43,9 @@ M.add_import_for_symbol_under_cursor = function()
   local chosen_import = candidates[tonumber(user_input)]
   if chosen_import then
     utils.add_import_to_current_buf(chosen_import, symbol)
+    print_info("Added import for " .. symbol .. ": " .. chosen_import)
   else
-    vim.api.nvim_echo(
-      { { "Invalid selection", config.HL_GROUPS.Error } },
-      false,
-      {}
-    )
+    print_err("Invalid selection")
   end
 end
 
@@ -51,6 +54,14 @@ end
 ---@param destination string: The path to the destination file/dir (after renaming/moving)
 ---@param opts UpdateImportsOptions: Options for updating imports
 M.update_imports = function(source, destination, opts)
+  log.debug(
+    "Updating imports from "
+      .. source
+      .. " to "
+      .. destination
+      .. " in filetypes: "
+      .. vim.inspect(opts.filetypes)
+  )
   update_imports.update_imports(source, destination, opts.filetypes)
 end
 

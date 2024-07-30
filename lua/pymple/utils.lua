@@ -1,6 +1,8 @@
 M = {}
 
 local filetype = require("plenary.filetype")
+local config = require("pymple.config")
+local log = require("pymple.log")
 
 ---@type number: The time to wait before refreshing open buffers
 DEFAULT_HANG_TIME = 1000
@@ -148,6 +150,31 @@ function M.table_contains(tbl, entry)
     end
   end
   return false
+end
+
+local MSG_PREFIX = "[pymple.nvim]: "
+
+---Print a message to the console
+---@param msg string: The message to print
+---@param hl_group string: The highlight group to use
+local print_msg = function(msg, hl_group)
+  vim.api.nvim_echo({ { MSG_PREFIX .. msg, hl_group } }, true, {})
+end
+
+M.print_msg = print_msg
+
+---Print an error message to the console
+---@param err_msg string: The error message to print
+function M.print_err(err_msg)
+  print_msg(err_msg, config.HL_GROUPS.Error)
+  log.error(err_msg)
+end
+
+---Print an info message to the console
+---@param info_msg string: The info message to print
+function M.print_info(info_msg)
+  print_msg(info_msg, config.HL_GROUPS.More)
+  log.info(info_msg)
 end
 
 return M

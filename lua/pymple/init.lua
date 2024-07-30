@@ -4,6 +4,8 @@ local config = require("pymple.config")
 local keymaps = require("pymple.keymaps")
 local api = require("pymple.api")
 local utils = require("pymple.utils")
+local print_err = utils.print_err
+local log = require("pymple.log")
 
 ---@param opts Config
 local function setup(opts)
@@ -12,12 +14,9 @@ local function setup(opts)
   setmetatable(opts, { __index = config.default_config })
 
   if not utils.table_contains(opts.update_imports.filetypes, "python") then
-    vim.api.nvim_echo({
-      {
-        "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`.",
-        config.HL_GROUPS.Error,
-      },
-    }, false, {})
+    print_err(
+      "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
+    )
   end
   local function _update_imports(source, destination)
     api.update_imports(source, destination, opts.update_imports)
@@ -31,6 +30,7 @@ local function setup(opts)
       `destination`]],
       nargs = "+",
     })
+    log.debug("Created UpdatePythonImports user command")
   end
 
   if opts.create_user_commands.add_import_for_symbol_under_cursor then
@@ -45,13 +45,18 @@ local function setup(opts)
         file (below any existing doctsring)]],
       }
     )
+    log.debug("Created PympleAddImportForSymbolUnderCursor user command")
   end
 
   keymaps.setup_keymaps(opts.keymaps)
+  log.debug("Set up keymaps")
 
   -- TODO: integrate with other file tree plugins (nvim-tree, oil, etc.)
   local neotree_installed, events = pcall(require, "neo-tree.events")
   if neotree_installed then
+    log.debug(
+      "Found neo-tree installation, hooking up FILE_MOVED and FILE_RENAMED events"
+    )
     events.subscribe({
       event = events.FILE_MOVED,
       handler = function(args)
@@ -69,7 +74,9 @@ end
 
 function M.setup(opts)
   opts = opts or config.default_config
+  log.debug("Setting up pymple with options: ", opts)
   setup(opts)
+  log.debug("Pymple setup complete")
 end
 
 return setmetatable(M, {

@@ -3,7 +3,7 @@ local utils = require("pymple.utils")
 local function handle_error(err)
   -- Extract the actual error message without traceback
   local error_message = err:match(":%d+: (.+)")
-  vim.api.nvim_echo({ { error_message or err, "ErrorMsg" } }, true, {})
+  utils.print_err(error_message)
 end
 
 local required_binaries = {

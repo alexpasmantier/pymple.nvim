@@ -1,6 +1,8 @@
 M = {}
 
----@type table<string, string>
+---@alias HlGroups { Error: string, Warning: string, More: string, Mode: string }
+
+---@type HlGroups
 M.HL_GROUPS = {
   Error = "ErrorMsg",
   Warning = "WarningMsg",
