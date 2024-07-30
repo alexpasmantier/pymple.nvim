@@ -36,7 +36,7 @@ use {
 
 ## ✨ Current features
 - [x] Automatically refactor workspace imports on file move/rename
-- [x] Code action-like bindable user command to automatically add missing import for symbol under cursor
+- [x] `Code action`-like bindable user command to automatically add missing import for symbol under cursor
 
 ## ⚙️ Configuration
 The configuration is currently quite limited, but you can change the following options:
