@@ -12,16 +12,16 @@ local default_config = {
   plugin = "pymple.nvim",
 
   -- Should print the output to neovim while running
-  use_console = true,
+  use_console = false,
 
   -- Should highlighting be used in console (using echohl)
   highlights = true,
 
   -- Should write to a file
-  use_file = true,
+  use_file = false,
 
   -- Any messages above this level will be logged.
-  level = "trace",
+  level = "warn",
 
   -- Level configuration
   modes = {
