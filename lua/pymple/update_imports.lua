@@ -99,7 +99,7 @@ local function update_imports_monolithic(source, destination, filetypes)
   local gg_args = {
     "--json",
     table.concat(build_filetypes_args(filetypes), " "),
-    string.format("'%s'", utils.escape_import_path(source_import_path)),
+    string.format("'%s[\\.\\s]'", utils.escape_import_path(source_import_path)),
     ".",
   }
   local sed_args = {
@@ -109,7 +109,12 @@ local function update_imports_monolithic(source, destination, filetypes)
       .. utils.escape_import_path(destination_import_path)
       .. "/'",
   }
-  jobs.gg_into_sed(gg_args, sed_args, false)
+  local sed_args = string.format(
+    "'s/%s\\([\\. ]\\)/%s\\1/'",
+    utils.escape_import_path(source_import_path),
+    utils.escape_import_path(destination_import_path)
+  )
+  jobs.gg_into_sed(gg_args, { sed_args }, false)
 end
 
 ---@param source string: The path to the source file/dir
