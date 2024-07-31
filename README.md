@@ -70,6 +70,18 @@ config = {
     -- the filetypes on which to run the update imports command
     -- NOTE: this should at least include "python" for the plugin to actually do anything useful
     filetypes = { "python", "markdown" },
+  },
+  -- logging options
+  logging = {
+    -- whether to enable logging
+    enabled = false,
+    -- whether to log to a file (default location is nvim's stdpath("data")/pymple.vlog which is usually
+    -- `~/.local/share/nvim/pymple.vlog` on unix systems)
+    use_file = false,
+    -- whether to log to the neovim console (only use this for debugging as it might quickly ruin your neovim experience)
+    use_console = false,
+    -- the log level to use (one of "trace", "debug", "info", "warn", "error", "fatal")
+    level = "debug",
   }
 }
 ```

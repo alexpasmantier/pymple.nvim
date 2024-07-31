@@ -35,13 +35,24 @@ local default_update_imports_options = {
   filetypes = { "python", "markdown" },
 }
 
----@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions, update_imports: UpdateImportsOptions }
+---@alias LoggingOptions { enabled: boolean, use_file: boolean, use_console: boolean, level: "trace" | "debug" | "info" | "warn" | "error" | "fatal" }
+
+---@type LoggingOptions
+local default_logging_options = {
+  enabled = false,
+  use_file = false,
+  use_console = false,
+  level = "debug",
+}
+
+---@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions, update_imports: UpdateImportsOptions, logging: LoggingOptions}
 
 ---@type Config
 M.default_config = {
   keymaps = default_keymaps,
   create_user_commands = default_user_command_options,
   update_imports = default_update_imports_options,
+  logging = default_logging_options,
 }
 
 return M

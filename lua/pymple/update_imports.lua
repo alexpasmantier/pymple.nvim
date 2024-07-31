@@ -3,6 +3,7 @@ M = {}
 local Path = require("plenary.path")
 local utils = require("pymple.utils")
 local jobs = require("pymple.jobs")
+local log = require("pymple.log")
 
 -- to be formatted using the full import path to the renamed file/dir
 local SPLIT_IMPORT_REGEX =
@@ -116,9 +117,14 @@ end
 ---@param filetypes string[]: The filetypes to update imports for
 function M.update_imports(source, destination, filetypes)
   if utils.is_python_file(source) and utils.is_python_file(destination) then
+    log.debug("Operating on a file")
+    log.debug("Updating imports split")
     update_imports_split(source, destination, filetypes)
+    log.debug("Updating imports monolithic")
     update_imports_monolithic(source, destination, filetypes)
   elseif utils.recursive_dir_contains_python_files(destination) then
+    log.debug("Operating on a directory")
+    log.debug("Updating imports monolithic")
     update_imports_monolithic(source, destination, filetypes)
   end
   utils.async_refresh_buffers(DEFAULT_HANG_TIME)

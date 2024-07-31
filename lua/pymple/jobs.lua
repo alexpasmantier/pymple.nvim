@@ -3,6 +3,7 @@ M = {}
 local Job = require("plenary.job")
 local utils = require("pymple.utils")
 local config = require("pymple.config")
+local log = require("pymple.log")
 
 ---@class Job
 ---@field command string Command to run
@@ -37,14 +38,15 @@ local function global_sed(gg_job_results, sed_args)
   if #file_paths == 0 then
     return
   end
+  local sed_args = table.concat(sed_args, " ")
+    .. " "
+    .. table.concat(file_paths, " ")
+  log.debug("Sed args: " .. sed_args)
   Job:new({
     command = "zsh",
     args = {
       "-c",
-      "sed -i '' " .. table.concat(sed_args, " ") .. " " .. table.concat(
-        file_paths,
-        " "
-      ),
+      "sed -i '' " .. sed_args,
     },
   }):start()
 end
@@ -68,15 +70,22 @@ local function ranged_sed(gg_job_results, sed_args)
     return
   end
   for _, match in ipairs(matches) do
+    log.debug(
+      "Match: "
+        .. match.path
+        .. " line start: "
+        .. match.lines[1]
+        .. " line end: "
+        .. match.lines[2]
+    )
+    local sed_args =
+      string.format(table.concat(sed_args, " "), match.lines[1], match.lines[2])
+    log.debug("Sed args: " .. sed_args .. match.path)
     Job:new({
       command = utils.SHELL,
       args = {
         "-c",
-        "sed -i '' " .. string.format(
-          table.concat(sed_args, " "),
-          match.lines[1],
-          match.lines[2]
-        ) .. " " .. match.path,
+        "sed -i '' " .. sed_args .. " " .. match.path,
       },
     }):start()
   end
@@ -86,6 +95,7 @@ end
 ---@param sed_args table: The arguments to pass to sed
 ---@param range boolean: Whether or not to call sed with a range specifier
 function M.gg_into_sed(gg_args, sed_args, range)
+  log.debug("gg args: " .. table.concat(gg_args, " "))
   Job:new({
     command = utils.SHELL,
     args = { "-c", "gg " .. table.concat(gg_args, " ") },
@@ -95,9 +105,12 @@ function M.gg_into_sed(gg_args, sed_args, range)
         local t = vim.json.decode(file_result)
         table.insert(gg_results, t)
       end
+      log.debug(#gg_results .. " results found")
       if range then
+        log.debug("Using ranged sed")
         ranged_sed(gg_results, sed_args)
       else
+        log.debug("Using global sed")
         global_sed(gg_results, sed_args)
       end
     end,

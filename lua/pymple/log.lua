@@ -18,7 +18,7 @@ local default_config = {
   highlights = true,
 
   -- Should write to a file
-  use_file = false,
+  use_file = true,
 
   -- Any messages above this level will be logged.
   level = "warn",
@@ -27,7 +27,7 @@ local default_config = {
   modes = {
     { name = "trace", hl = "Comment" },
     { name = "debug", hl = "Comment" },
-    { name = "info", hl = "None" },
+    { name = "info", hl = "@string" },
     { name = "warn", hl = "WarningMsg" },
     { name = "error", hl = "ErrorMsg" },
     { name = "fatal", hl = "ErrorMsg" },
@@ -39,6 +39,10 @@ local default_config = {
 
 -- {{{ NO NEED TO CHANGE
 local log = {}
+log.off_config = {
+  use_console = false,
+  use_file = false,
+}
 
 local unpack = unpack or table.unpack
 
@@ -157,7 +161,6 @@ log.new = function(config, standalone)
   end
 end
 
-log.new(default_config, true)
 -- }}}
 
 return log

@@ -13,6 +13,14 @@ local function setup(opts)
 
   setmetatable(opts, { __index = config.default_config })
 
+  if opts.logging.enabled then
+    opts.logging.enabled = nil
+    log.new(opts.logging, true)
+    log.debug("Logging enabled")
+  else
+    log.new(log.off_config, true)
+  end
+
   if not utils.table_contains(opts.update_imports.filetypes, "python") then
     print_err(
       "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
@@ -74,7 +82,6 @@ end
 
 function M.setup(opts)
   opts = opts or config.default_config
-  log.debug("Setting up pymple with options: ", opts)
   setup(opts)
   log.debug("Pymple setup complete")
 end
