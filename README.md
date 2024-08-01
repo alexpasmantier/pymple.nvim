@@ -1,5 +1,5 @@
 # 🖍️ pymple.nvim
-All your missing Python IDE features for Neovim.
+All your missing Python IDE features for Neovim (WIP 🤓).
 
 ## ⚡️ Requirements
 - the [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) lua package
