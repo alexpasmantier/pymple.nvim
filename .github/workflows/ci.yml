@@ -1,0 +1,43 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  unit_tests:
+    name: unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-12, windows-2022]
+        rev: [nightly, v0.9.5, v0.10.0]
+        include:
+          - os: ubuntu-22.04
+            install-cargo: sudo curl https://sh.rustup.rs -sSf | sh
+            install-gg: cargo install grip-grab
+          - os: macos-12
+            install-cargo: sudo curl https://sh.rustup.rs -sSf | sh 
+            install-gg: cargo install grip-grab
+          - os: windows-2022
+            install-cargo: sudo curl https://sh.rustup.rs -sSf | sh
+            install-gg: cargo install grip-grab
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.rev }}
+
+      - name: Prepare
+        run: |
+          ${{ matrix.install-rg }}
+          gg --version
+
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../plenary.nvim
+
+      - name: Run tests
+        run: |
+          nvim --version
+          make test
