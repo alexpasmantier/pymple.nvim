@@ -10,7 +10,7 @@
 ---   installed python packages
 --- - automatic and configurable creation of test files that mirror your project
 ---   structure
---- @brief ]]
+---@brief ]]
 local M = {}
 
 local config = require("pymple.config")
