@@ -13,13 +13,13 @@ jobs:
         rev: [nightly, v0.9.5, v0.10.0]
         include:
           - os: ubuntu-22.04
-            install-cargo: sudo curl https://sh.rustup.rs -sSf | sh -y
+            install-cargo: sudo curl -sSf https://sh.rustup.rs | sh -s -- -y 
             install-gg: cargo install grip-grab
           - os: macos-12
-            install-cargo: sudo curl https://sh.rustup.rs -sSf | sh -y
+            install-cargo: sudo curl -sSf https://sh.rustup.rs | sh -s -- -y 
             install-gg: cargo install grip-grab
           - os: windows-2022
-            install-cargo: sudo curl https://sh.rustup.rs -sSf | sh -y
+            install-cargo: sudo curl -sSf https://sh.rustup.rs | sh -s -- -y 
             install-gg: cargo install grip-grab
 
     steps:
