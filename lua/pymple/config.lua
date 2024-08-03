@@ -54,7 +54,12 @@
 ---     -- the log level to use
 ---     -- (one of "trace", "debug", "info", "warn", "error", "fatal")
 ---     level = "debug",
----   }
+---   },
+---   -- python options
+---   python = {
+---   -- the names of virtual environment folders to look out for
+---   virtual_env_names = { ".venv" },
+---   },
 --- }
 --- ```
 --- </pre>
