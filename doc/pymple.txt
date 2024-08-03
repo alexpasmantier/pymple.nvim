@@ -1,16 +1,67 @@
-===============================================================================
-								    pymple.nvim
+================================================================================
+NVIM                                                               *pymple.nvim*
 
-This plugin attempts to provide missing utilities when working with Python
-inside Neovim.
+Pymple is a Neovim plugin that helps you manage Python imports. This plugin
+attempts to provide missing utilities when working with Python inside Neovim.
 
 These utilities include:
 - automatic renaming of imports when renaming/moving a file or a folder
-- automatic symbol import resolution based on your current workspace and
+- automatic symbol import resolution based on your current workspace and 
   installed python packages
-- automatic and configurable creation of test files that mirror your project
-  structure
+- automatic and configurable creation of test files that mirror your project 
+  structure @brief ]]
 
-See examples below.
 
-vim:tw=79:ts=8:ft=help:norl:
+================================================================================
+M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
+    Resolves import for symbol under cursor. This will automatically find and
+    add the corresponding import to the top of the file (below any existing
+    doctsring)
+
+
+
+M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
+    Update all imports in workspace after renaming `source` to `destination`
+
+
+    Parameters: ~
+        {source}      (string)                The path to the source file/dir
+                                              (before renaming/moving)
+        {destination} (string)                The path to the destination
+                                              file/dir (after renaming/moving)
+        {opts}        (UpdateImportsOptions)  Options for updating imports
+
+
+
+================================================================================
+Job                                                                      *Job*
+
+
+
+M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
+    Finds import candidates in workspace
+
+
+    Parameters: ~
+        {args} (string[])  The args to search for
+
+    Return: ~
+        string[]: The import candidates
+
+
+M.find_import_candidates_in_venv({args}, {site_packages_location}) *M.find_import_candidates_in_venv()*
+    Finds import candidates in venv
+
+
+    Parameters: ~
+        {args}                   (Target)  The args to search for
+        {site_packages_location} (string)  The location of the site packages
+
+    Return: ~
+        string[]: The import candidates
+
+
+
+================================================================================
+
+ vim:tw=78:ts=8:ft=help:norl:
