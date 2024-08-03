@@ -11,8 +11,95 @@ These utilities include:
 - automatic and configurable creation of test files that mirror your project 
   structure @brief ]]
 
+M.setup({opts})                                                    *M.setup()*
+    Setup pymple.nvim with the provided configuration
+
+
+    Parameters: ~
+        {opts} (Config)
+
+
 
 ================================================================================
+CONFIG                                                           *pymple.config*
+
+Plugin configuration Configurating the plugin is pretty straightforward at the
+moment. You can decide whether to create user commands or not, how to setup
+different keymaps, which filetypes to update imports for, and whether or not to
+activate logging.
+
+The default configuration is as follows:
+
+```lua
+config = {
+  -- automatically register the following keymaps on plugin setup
+  keymaps = {
+    -- Resolves import for symbol under cursor.
+    -- This will automatically find and add the corresponding import to
+    -- the top of the file (below any existing doctsring)
+    add_import_for_symbol_under_cursor = {
+      keys = "<leader>li", -- feel free to change this to whatever you like
+      desc = "Resolve import under cursor", -- description for the keymap
+    },
+  },
+  -- automatically create the following user commands on plugin setup
+  create_user_commands = {
+    -- Update all workspace imports after moving/renaming a file.
+    -- This takes two arguments (old_path, new_path)
+    -- and can be called as ":UpdatePythonImports old_path new_path"
+    update_imports = true,
+    -- Resolve import for symbol under cursor and add it to the top
+    -- of the current buffer.
+    -- This will usually be hooked up by pymple on setup to your file
+    -- explorer's events and get triggered automatically when you move
+    -- or rename a file or a folder.
+    add_import_for_symbol_under_cursor = true,
+  },
+  -- options for the update imports feature
+  update_imports = {
+    -- the filetypes on which to run the update imports command
+    -- NOTE: this should at least include "python" for the plugin to
+    -- actually do anything useful
+    filetypes = { "python", "markdown" },
+  },
+  -- logging options
+  logging = {
+    -- whether to enable logging
+    enabled = false,
+    -- whether to log to a file (default location is nvim's
+    -- stdpath("data")/pymple.vlog which is usually
+    -- `~/.local/share/nvim/pymple.vlog` on unix systems)
+    use_file = false,
+    -- whether to log to the neovim console (only use this for debugging
+    -- as it might quickly ruin your neovim experience)
+    use_console = false,
+    -- the log level to use
+    -- (one of "trace", "debug", "info", "warn", "error", "fatal")
+    level = "debug",
+  }
+}
+```
+
+M.HL_GROUPS()                                                  *M.HL_GROUPS()*
+
+
+
+M.default_config()                                        *M.default_config()*
+
+
+
+
+================================================================================
+API                                                                 *pymple.api*
+
+Pymple's API module exposes some of the main functions used by the plugin.
+
+At the moment, the following functions are exposed:
+ - `add_import_for_symbol_under_cursor`: Resolves import for symbol under
+   cursor.
+ - `update_imports`: Update all imports in workspace after renaming `source` to
+   `destination`.
+
 M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
     Resolves import for symbol under cursor. This will automatically find and
     add the corresponding import to the top of the file (below any existing
@@ -34,8 +121,25 @@ M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
 
 
 ================================================================================
+JOBS                                                               *pymple.jobs*
+
+Pymple's jobs module exposes functions that run jobs in the background. These
+will typically be used for tasks like searching for import candidates or
+updating imports in the workspace using `gg` and `sed`.
+
 Job                                                                      *Job*
 
+
+
+M.gg_into_sed({gg_args}, {sed_args}, {range})                *M.gg_into_sed()*
+    Runs a gg job and pipes the results into a sed job
+
+
+    Parameters: ~
+        {gg_args}  (table)    The arguments to pass to gg
+        {sed_args} (table)    The arguments to pass to sed
+        {range}    (boolean)  Whether or not to call sed with a range
+                              specifier
 
 
 M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
@@ -43,7 +147,7 @@ M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_works
 
 
     Parameters: ~
-        {args} (string[])  The args to search for
+        {args} (string[])  Arguments to pass to the `gg` command
 
     Return: ~
         string[]: The import candidates
@@ -54,14 +158,14 @@ M.find_import_candidates_in_venv({args}, {site_packages_location}) *M.find_impor
 
 
     Parameters: ~
-        {args}                   (Target)  The args to search for
-        {site_packages_location} (string)  The location of the site packages
+        {args}                   (string[])  Arguments to pass to the `gg`
+                                             command
+        {site_packages_location} (string)    The location of the site packages
+                                             directory
 
     Return: ~
         string[]: The import candidates
 
 
-
-================================================================================
 
  vim:tw=78:ts=8:ft=help:norl:
