@@ -1,11 +1,11 @@
 ---@tag pymple.nvim
 ---@brief [[
---- Pymple is a Neovim plugin that helps you manage Python imports.
 --- This plugin attempts to provide missing utilities when working with Python
 --- inside Neovim.
 ---
 --- These utilities include:
 --- - automatic renaming of imports when renaming/moving a file or a folder
+--- - shortcuts to create usual python files (`tests`, `__init__`, etc.)
 --- - automatic symbol import resolution based on your current workspace and
 ---   installed python packages
 --- - automatic and configurable creation of test files that mirror your project

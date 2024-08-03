@@ -1,7 +1,7 @@
 ---@tag pymple.config
 ---@brief [[
 --- Plugin configuration
---- Configurating the plugin is pretty straightforward at the moment.
+--- Configuring the plugin is pretty straightforward at the moment.
 --- You can decide whether to create user commands or not, how to setup different keymaps,
 --- which filetypes to update imports for, and whether or not to activate logging.
 ---
