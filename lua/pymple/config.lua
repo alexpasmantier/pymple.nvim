@@ -106,14 +106,31 @@ local default_logging_options = {
   level = "debug",
 }
 
----@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions, update_imports: UpdateImportsOptions, logging: LoggingOptions}
+---@alias PythonOptions { virtual_env_names: string[] }
 
----@type Config
-M.default_config = {
+---@type PythonOptions
+local default_python_options = {
+  virtual_env_names = { ".venv" },
+}
+
+---@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions, update_imports: UpdateImportsOptions, logging: LoggingOptions, python: PythonOptions}
+
+local default_config = {
   keymaps = default_keymaps,
   create_user_commands = default_user_command_options,
   update_imports = default_update_imports_options,
   logging = default_logging_options,
+  python = default_python_options,
 }
+
+---@type Config
+M.default_config = default_config
+
+---@param opts Config
+function M.set_config(opts)
+  M.config = vim.tbl_deep_extend("force", default_config, opts)
+end
+
+M.set_config(M.default_config)
 
 return M

@@ -20,6 +20,8 @@ local function build_filetypes_args(filetypes)
   return args
 end
 
+M.build_filetypes_args = build_filetypes_args
+
 --[[
 from path.to.dir import file
 from path.to.dir import (
@@ -31,7 +33,8 @@ from path.to.file import Something
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
-local function update_imports_split(source, destination, filetypes)
+local function update_imports_split(source, destination, filetypes, _job)
+  local __job = _job or jobs.gg_into_sed
   local cwd = vim.fn.getcwd()
 
   local source_relative = Path:new(source):make_relative(cwd)
@@ -71,9 +74,11 @@ local function update_imports_split(source, destination, filetypes)
       .. utils.escape_import_path(destination_module_name)
       .. "/'",
   }
-  jobs.gg_into_sed(gg_args_split, sed_args_base, true)
-  jobs.gg_into_sed(gg_args_split, sed_args_module, true)
+  __job(gg_args_split, sed_args_base, true)
+  __job(gg_args_split, sed_args_module, true)
 end
+
+M.update_imports_split = update_imports_split
 
 --[[
 from path.to.dir import file
@@ -85,7 +90,8 @@ from path.to.dir import (
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
-local function update_imports_monolithic(source, destination, filetypes)
+local function update_imports_monolithic(source, destination, filetypes, _job)
+  local __job = _job or jobs.gg_into_sed
   local cwd = vim.fn.getcwd()
 
   -- path/to/here
@@ -102,20 +108,15 @@ local function update_imports_monolithic(source, destination, filetypes)
     string.format("'%s[\\.\\s]'", utils.escape_import_path(source_import_path)),
     ".",
   }
-  local sed_args = {
-    "'s/"
-      .. utils.escape_import_path(source_import_path)
-      .. "/"
-      .. utils.escape_import_path(destination_import_path)
-      .. "/'",
-  }
   local sed_args = string.format(
     "'s/%s\\([\\. ]\\)/%s\\1/'",
     utils.escape_import_path(source_import_path),
     utils.escape_import_path(destination_import_path)
   )
-  jobs.gg_into_sed(gg_args, { sed_args }, false)
+  __job(gg_args, { sed_args }, false)
 end
+
+M.update_imports_monolithic = update_imports_monolithic
 
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
