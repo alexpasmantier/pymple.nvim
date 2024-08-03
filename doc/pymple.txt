@@ -2,11 +2,12 @@
 ================================================================================
 NVIM                                                               *pymple.nvim*
 
-Pymple is a Neovim plugin that helps you manage Python imports. This plugin
-attempts to provide missing utilities when working with Python inside Neovim.
+This plugin attempts to provide missing utilities when working with Python
+inside Neovim.
 
 These utilities include:
 - automatic renaming of imports when renaming/moving a file or a folder
+- shortcuts to create usual python files (`tests`, `__init__`, etc.)
 - automatic symbol import resolution based on your current workspace and 
   installed python packages
 - automatic and configurable creation of test files that mirror your project 
@@ -24,7 +25,7 @@ M.setup({opts})                                                    *M.setup()*
 ================================================================================
 CONFIG                                                           *pymple.config*
 
-Plugin configuration Configurating the plugin is pretty straightforward at the
+Plugin configuration Configuring the plugin is pretty straightforward at the
 moment. You can decide whether to create user commands or not, how to setup
 different keymaps, which filetypes to update imports for, and whether or not to
 activate logging.
