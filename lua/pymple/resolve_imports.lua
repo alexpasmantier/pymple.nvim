@@ -19,14 +19,18 @@ local IMPORTABLE_SYMBOLS_PATTERNS = {
 
 ---@param args table
 ---@param symbol string
+---@param regexes string[]
 ---@return table
-local function add_symbol_regexes(args, symbol)
-  for _, pattern in ipairs(IMPORTABLE_SYMBOLS_PATTERNS) do
+local function add_symbol_regexes(args, symbol, regexes)
+  regexes = regexes or IMPORTABLE_SYMBOLS_PATTERNS
+  for _, pattern in ipairs(regexes) do
     table.insert(args, "-e")
     table.insert(args, string.format(pattern, symbol))
   end
   return args
 end
+
+M.add_symbol_regexes = add_symbol_regexes
 
 ---@param symbol string: the symbol for which to resolve an import
 ---@return string[] | nil: list of candidates

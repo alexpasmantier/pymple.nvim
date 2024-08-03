@@ -26,6 +26,7 @@ local function setup(opts)
   opts = opts or {}
 
   setmetatable(opts, { __index = config.default_config })
+  config.set_config(opts)
 
   if opts.logging.enabled then
     opts.logging.enabled = nil
