@@ -9,7 +9,7 @@ These utilities include:
 - automatic symbol import resolution based on your current workspace and 
   installed python packages
 - automatic and configurable creation of test files that mirror your project 
-  structure @brief ]]
+  structure
 
 M.setup({opts})                                                    *M.setup()*
     Setup pymple.nvim with the provided configuration
