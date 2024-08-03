@@ -39,10 +39,10 @@ This plugin attempts to provide missing utilities when working with Python
 inside Neovim.
 
 The following features are currently available:
-- [x] Automatically refactoring of workspace imports on python file/dir move/rename
-- [x] Automatically add missing import for symbol under cursor with a keymap (searches in workspace and installed packages)
-- [ ] shortcuts to create usual python files (`tests`, `__init__`, etc.) from your favorite file explorer
-- [ ] automatic and configurable creation of test files that mirror your project
+- ✅ Automatically refactoring of workspace imports on python file/dir move/rename
+- ✅ Automatically add missing import for symbol under cursor with a keymap (searches in workspace and installed packages)
+- 👷 shortcuts to create usual python files (`tests`, `__init__`, etc.) from your favorite file explorer
+- 👷 automatic and configurable creation of test files that mirror your project
   structure
 
 
