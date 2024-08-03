@@ -6,6 +6,7 @@
 --- which filetypes to update imports for, and whether or not to activate logging.
 ---
 --- The default configuration is as follows:
+---
 --- ```lua
 --- config = {
 ---   -- automatically register the following keymaps on plugin setup
@@ -51,6 +52,7 @@
 ---   }
 --- }
 --- ```
+---
 --- @brief ]]
 M = {}
 
