@@ -1,3 +1,57 @@
+---@tag pymple.config
+---@brief [[
+--- Plugin configuration
+--- Configurating the plugin is pretty straightforward at the moment.
+--- You can decide whether to create user commands or not, how to setup different keymaps,
+--- which filetypes to update imports for, and whether or not to activate logging.
+---
+--- The default configuration is as follows:
+--- ```lua
+--- config = {
+---   -- automatically register the following keymaps on plugin setup
+---   keymaps = {
+---     -- Resolves import for symbol under cursor.
+---     -- This will automatically find and add the corresponding import to the top of
+---     -- the file (below any existing doctsring)
+---     add_import_for_symbol_under_cursor = {
+---       keys = "<leader>li",  -- feel free to change this to whatever you like
+---       desc = "Resolve import under cursor", -- description for the keymap
+---     },
+---   },
+---   -- automatically create the following user commands on plugin setup
+---   create_user_commands = {
+---     -- Update all workspace imports after moving/renaming a file.
+---     -- This takes two arguments (old_path, new_path)
+---     -- and can be called as ":UpdatePythonImports old_path new_path"
+---     update_imports = true,
+---     -- Resolve import for symbol under cursor and add it to the top
+---     -- of the current buffer.
+---     -- This will usually be hooked up by pymple on setup to your file
+---     -- explorer's events and get triggered automatically when you move
+---     -- or rename a file or a folder.
+---     add_import_for_symbol_under_cursor = true,
+---   },
+---   -- options for the update imports feature
+---   update_imports = {
+---     -- the filetypes on which to run the update imports command
+---     -- NOTE: this should at least include "python" for the plugin to actually do anything useful
+---     filetypes = { "python", "markdown" },
+---   },
+---   -- logging options
+---   logging = {
+---     -- whether to enable logging
+---     enabled = false,
+---     -- whether to log to a file (default location is nvim's stdpath("data")/pymple.vlog which is usually
+---     -- `~/.local/share/nvim/pymple.vlog` on unix systems)
+---     use_file = false,
+---     -- whether to log to the neovim console (only use this for debugging as it might quickly ruin your neovim experience)
+---     use_console = false,
+---     -- the log level to use (one of "trace", "debug", "info", "warn", "error", "fatal")
+---     level = "debug",
+---   }
+--- }
+--- ```
+--- @brief ]]
 M = {}
 
 ---@alias HlGroups { Error: string, Warning: string, More: string, Mode: string }

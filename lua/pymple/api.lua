@@ -1,3 +1,11 @@
+---@tag pymple.api
+---@brief [[
+--- Pymple's API module exposes some of the main functions used by the plugin.
+---
+--- At the moment, the following functions are exposed:
+---  - `add_import_for_symbol_under_cursor`: Resolves import for symbol under cursor.
+---  - `update_imports`: Update all imports in workspace after renaming `source` to `destination`.
+---]]
 local M = {}
 
 local resolve_imports = require("pymple.resolve_imports")

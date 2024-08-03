@@ -20,6 +20,7 @@ local utils = require("pymple.utils")
 local print_err = utils.print_err
 local log = require("pymple.log")
 
+--- Setup pymple.nvim with the provided configuration
 ---@param opts Config
 local function setup(opts)
   opts = opts or {}
@@ -93,14 +94,18 @@ local function setup(opts)
   end
 end
 
+--- Setup pymple.nvim with the provided configuration
+---@param opts Config
 function M.setup(opts)
   opts = opts or config.default_config
   setup(opts)
   log.debug("Pymple setup complete")
 end
 
-return setmetatable(M, {
+setmetatable(M, {
   __index = function(_, k)
     return require("pymple.api")[k]
   end,
 })
+
+return M
