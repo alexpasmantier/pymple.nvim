@@ -21,6 +21,8 @@ docs.test = function()
   -- Output file
   local output_file_handle = io.open(OUTPUT_FILE, "w")
 
+  output_file_handle:write("*pymple.nvim*    pymple.nvim Help File")
+
   for _, input_file in ipairs(input_files) do
     docgen.write(input_file, output_file_handle)
   end
