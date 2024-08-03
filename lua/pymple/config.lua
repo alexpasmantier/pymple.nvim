@@ -7,15 +7,16 @@
 ---
 --- The default configuration is as follows:
 ---
+--- <pre>
 --- ```lua
 --- config = {
 ---   -- automatically register the following keymaps on plugin setup
 ---   keymaps = {
 ---     -- Resolves import for symbol under cursor.
----     -- This will automatically find and add the corresponding import to the top of
----     -- the file (below any existing doctsring)
+---     -- This will automatically find and add the corresponding import to
+---     -- the top of the file (below any existing doctsring)
 ---     add_import_for_symbol_under_cursor = {
----       keys = "<leader>li",  -- feel free to change this to whatever you like
+---       keys = "<leader>li", -- feel free to change this to whatever you like
 ---       desc = "Resolve import under cursor", -- description for the keymap
 ---     },
 ---   },
@@ -35,23 +36,28 @@
 ---   -- options for the update imports feature
 ---   update_imports = {
 ---     -- the filetypes on which to run the update imports command
----     -- NOTE: this should at least include "python" for the plugin to actually do anything useful
+---     -- NOTE: this should at least include "python" for the plugin to
+---     -- actually do anything useful
 ---     filetypes = { "python", "markdown" },
 ---   },
 ---   -- logging options
 ---   logging = {
 ---     -- whether to enable logging
 ---     enabled = false,
----     -- whether to log to a file (default location is nvim's stdpath("data")/pymple.vlog which is usually
+---     -- whether to log to a file (default location is nvim's
+---     -- stdpath("data")/pymple.vlog which is usually
 ---     -- `~/.local/share/nvim/pymple.vlog` on unix systems)
 ---     use_file = false,
----     -- whether to log to the neovim console (only use this for debugging as it might quickly ruin your neovim experience)
+---     -- whether to log to the neovim console (only use this for debugging
+---     -- as it might quickly ruin your neovim experience)
 ---     use_console = false,
----     -- the log level to use (one of "trace", "debug", "info", "warn", "error", "fatal")
+---     -- the log level to use
+---     -- (one of "trace", "debug", "info", "warn", "error", "fatal")
 ---     level = "debug",
 ---   }
 --- }
 --- ```
+--- </pre>
 ---@brief ]]
 M = {}
 
