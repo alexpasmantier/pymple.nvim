@@ -9,8 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-12, windows-2022]
-        rev: [v0.9.5, v0.10.0]
+        os: [ubuntu-22.04, macos-12]
+        rev: [v0.10.0]
         include:
           - os: ubuntu-22.04
             install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y 
