@@ -1,12 +1,6 @@
 name: Generate docs
 
-on:
-  push:
-    branches-ignore:
-      - main
-  pull_request_target:
-    branches:
-      - master
+on: [push, pull_request]
 
 jobs:
   build-sources:
