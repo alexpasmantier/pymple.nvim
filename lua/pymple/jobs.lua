@@ -3,8 +3,7 @@
 --- Pymple's jobs module exposes functions that run jobs in the background.
 --- These will typically be used for tasks like searching for import candidates
 --- or updating imports in the workspace using `gg` and `sed`.
----
---- ]]
+---@brief ]]
 M = {}
 
 local Job = require("plenary.job")

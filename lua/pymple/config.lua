@@ -52,8 +52,7 @@
 ---   }
 --- }
 --- ```
----
---- @brief ]]
+---@brief ]]
 M = {}
 
 ---@alias HlGroups { Error: string, Warning: string, More: string, Mode: string }

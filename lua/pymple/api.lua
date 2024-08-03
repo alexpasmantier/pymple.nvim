@@ -5,8 +5,7 @@
 --- At the moment, the following functions are exposed:
 ---  - `add_import_for_symbol_under_cursor`: Resolves import for symbol under cursor.
 ---  - `update_imports`: Update all imports in workspace after renaming `source` to `destination`.
----
----]]
+---@brief ]]
 local M = {}
 
 local resolve_imports = require("pymple.resolve_imports")
