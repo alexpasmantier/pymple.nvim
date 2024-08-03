@@ -1,3 +1,9 @@
+---@tag pymple.jobs
+---@brief [[
+--- Pymple's jobs module exposes functions that run jobs in the background.
+--- These will typically be used for tasks like searching for import candidates
+--- or updating imports in the workspace using `gg` and `sed`.
+---@brief ]]
 M = {}
 
 local Job = require("plenary.job")
@@ -28,6 +34,7 @@ local log = require("pymple.log")
 ---@alias gg_json_result {path: string, results: gg_json_search_results}
 ---@alias gg_json_results gg_json_result[]
 
+--- Runs a global sed command on the results of a gg job
 ---@param gg_job_results gg_json_results: The results of the gg job
 ---@param sed_args table: The arguments to pass to sed
 local function global_sed(gg_job_results, sed_args)
@@ -51,6 +58,7 @@ local function global_sed(gg_job_results, sed_args)
   }):start()
 end
 
+--- Runs a ranged sed command on the results of a gg job
 ---@param gg_job_results gg_json_results: The results of the gg job
 ---@param sed_args table: The arguments to pass to sed
 local function ranged_sed(gg_job_results, sed_args)
@@ -91,6 +99,7 @@ local function ranged_sed(gg_job_results, sed_args)
   end
 end
 
+--- Runs a gg job and pipes the results into a sed job
 ---@param gg_args table: The arguments to pass to gg
 ---@param sed_args table: The arguments to pass to sed
 ---@param range boolean: Whether or not to call sed with a range specifier
@@ -118,7 +127,7 @@ function M.gg_into_sed(gg_args, sed_args, range)
 end
 
 ---Finds import candidates in workspace
----@param args string[]: The args to search for
+---@param args string[]: Arguments to pass to the `gg` command
 ---@return string[]: The import candidates
 function M.find_import_candidates_in_workspace(args)
   local candidates = {}
@@ -139,8 +148,8 @@ function M.find_import_candidates_in_workspace(args)
 end
 
 ---Finds import candidates in venv
----@param args Target: The args to search for
----@param site_packages_location string: The location of the site packages
+---@param args string[]: Arguments to pass to the `gg` command
+---@param site_packages_location string: The location of the site packages directory
 ---@return string[]: The import candidates
 function M.find_import_candidates_in_venv(args, site_packages_location)
   local candidates = {}

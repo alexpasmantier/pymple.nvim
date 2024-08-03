@@ -8,9 +8,9 @@ docs.test = function()
   -- Filepaths that should generate docs
   local input_files = {
     "./lua/pymple/init.lua",
+    "./lua/pymple/config.lua",
     "./lua/pymple/api.lua",
     "./lua/pymple/jobs.lua",
-    "./lua/pymple/update_imports.lua",
   }
 
   -- Maybe sort them that depends what you want and need
