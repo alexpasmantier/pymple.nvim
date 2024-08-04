@@ -33,8 +33,9 @@ end
 M.add_symbol_regexes = add_symbol_regexes
 
 ---@param symbol string: the symbol for which to resolve an import
+---@param current_file_path string: the path to the current file
 ---@return string[] | nil: list of candidates
-function M.resolve_python_import(symbol)
+function M.resolve_python_import(symbol, current_file_path)
   if not utils.is_python_file(vim.fn.expand("%")) then
     print_err("Not a python file")
     return
@@ -44,8 +45,9 @@ function M.resolve_python_import(symbol)
   local site_packages_location = Path:new(utils.get_site_packages_location())
     :make_relative(cwd)
 
-  local local_args = { "-f", "-t", "python", "-C" }
-  local_args = add_symbol_regexes(local_args, symbol)
+  local local_args = { "-fCH", "-t", "python", "-I", current_file_path }
+  local_args =
+    add_symbol_regexes(local_args, symbol, IMPORTABLE_SYMBOLS_PATTERNS)
   table.insert(local_args, ".")
   local candidate_paths = jobs.find_import_candidates_in_workspace(local_args)
 

@@ -3,6 +3,7 @@ M = {}
 local filetype = require("plenary.filetype")
 local cfg = require("pymple.config")
 local log = require("pymple.log")
+local ts_utils = require("nvim-treesitter.ts_utils")
 
 ---@type number: The time to wait before refreshing open buffers
 local DEFAULT_HANG_TIME = 1000
@@ -40,6 +41,18 @@ M.SHELL = M.get_user_shell()
 ---@return boolean
 function M.check_binary_installed(binary_name)
   return 1 == vim.fn.executable(binary_name)
+end
+
+local function lualib_installed(lib_name)
+  local res, _ = pcall(require, lib_name)
+  return res
+end
+
+---checks if a plugin is installed
+---@param plugin_name string
+---@return boolean
+function M.check_plugin_installed(plugin_name)
+  return lualib_installed(plugin_name)
 end
 
 ---Converts a path to an import path
@@ -129,7 +142,8 @@ M.find_docstring_end_line_number = find_docstring_end_line_number
 ---@param import_path string: The import path to be added
 ---@param symbol string: The symbol to be imported
 ---@param buf number: The buffer number
-function M.add_import_to_buffer(import_path, symbol, buf)
+---@param autosave boolean: Whether or not to autosave the buffer after adding the import
+function M.add_import_to_buffer(import_path, symbol, buf, autosave)
   local docstring_height = find_docstring_end_line_number(buf)
   local insert_on_line = 0
   if docstring_height ~= 0 then
@@ -143,12 +157,15 @@ function M.add_import_to_buffer(import_path, symbol, buf)
     false,
     { "from " .. import_path .. " import " .. symbol, "" }
   )
+  if autosave then
+    vim.cmd.write()
+  end
 end
 
 ---@param path string: The path in which to search for a virtual environment
 ---@return string | nil: The path to the virtual environment, or nil if it doesn't exist
 local function dir_contains_virtualenv(path)
-  for _, venv_name in ipairs(cfg.config.python.virtual_env_names) do
+  for _, venv_name in ipairs(cfg.user_config.python.virtual_env_names) do
     local venv_path = path .. "/" .. venv_name
     if vim.fn.isdirectory(venv_path) == 1 then
       return venv_path
@@ -217,7 +234,9 @@ M.print_msg = print_msg
 ---@param err_msg string: The error message to print
 function M.print_err(err_msg)
   print_msg(err_msg, cfg.HL_GROUPS.Error)
-  log.error(err_msg)
+  if log.error then
+    log.error(err_msg)
+  end
 end
 
 ---Print an info message to the console
@@ -225,6 +244,30 @@ end
 function M.print_info(info_msg)
   print_msg(info_msg, cfg.HL_GROUPS.More)
   log.info(info_msg)
+end
+
+---Check if the current node is an identifier using tree-sitter
+---@return boolean, string|nil: Whether or not the current node is an identifier
+function M.is_cursor_node_identifier()
+  local node = ts_utils.get_node_at_cursor()
+  if not node then
+    return false, nil
+  end
+  local node_type = node:type()
+  return node_type == "identifier", node_type
+end
+
+---Get the longest string in a list
+---@param list string[]: The list of strings
+---@return string: The longest string in the list
+function M.longest_string_in_list(list)
+  local longest = ""
+  for _, str in ipairs(list) do
+    if #str > #longest then
+      longest = str
+    end
+  end
+  return longest
 end
 
 return M
