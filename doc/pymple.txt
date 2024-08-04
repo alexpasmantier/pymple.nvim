@@ -63,6 +63,11 @@ config = {
     -- actually do anything useful
     filetypes = { "python", "markdown" },
   },
+  -- options for the add import to buffer feature
+  add_import_to_buf = {
+    -- whether to autosave the buffer after adding the import
+    autosave = true,
+  },
   -- logging options
   logging = {
     -- whether to enable logging
@@ -85,6 +90,18 @@ config = {
   },
 }
 ```
+
+Config                                                                *Config*
+
+
+    Fields: ~
+        {keymaps}              (Keymaps)
+        {create_user_commands} (UserCommandOptions)
+        {update_imports}       (UpdateImportsOptions)
+        {logging}              (LoggingOptions)
+        {python}               (PythonOptions)
+        {add_import_to_buf}    (AddImportToBufOptions)
+
 
 M.HL_GROUPS()                                                  *M.HL_GROUPS()*
 
