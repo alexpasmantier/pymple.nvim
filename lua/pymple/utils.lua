@@ -21,11 +21,15 @@ function M.get_user_shell()
     return shell
   end
   -- otherwise check $0
-  local shell_pid = vim.fn.getpid()
-  local shell_cmd = vim.fn.getpidname(shell_pid)
-  if shell_cmd then
-    return shell_cmd
-  end
+  -- local obj = vim.system({ "echo", "$0" }, { text = true }):wait()
+  -- local stdout = obj.stdout
+  -- if stdout ~= nil then
+  --   stdout = stdout:gsub("-", "")
+  --   stdout = stdout:gsub("\n", "")
+  -- end
+  -- if stdout then
+  --   return stdout
+  -- end
   return "/bin/sh"
 end
 
