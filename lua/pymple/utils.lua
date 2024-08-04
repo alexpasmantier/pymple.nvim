@@ -16,7 +16,17 @@ end
 ---gets the $SHELL env var
 ---@return string?
 function M.get_user_shell()
-  return os.getenv("SHELL")
+  local shell = os.getenv("SHELL")
+  if shell then
+    return shell
+  end
+  -- otherwise check $0
+  local shell_pid = vim.fn.getpid()
+  local shell_cmd = vim.fn.getpidname(shell_pid)
+  if shell_cmd then
+    return shell_cmd
+  end
+  return "/bin/sh"
 end
 
 M.SHELL = M.get_user_shell()
