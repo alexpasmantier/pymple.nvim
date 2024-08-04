@@ -130,16 +130,15 @@ M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
 
 
 
-M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
+M.update_imports({source}, {destination})                 *M.update_imports()*
     Update all imports in workspace after renaming `source` to `destination`
 
 
     Parameters: ~
-        {source}      (string)                The path to the source file/dir
-                                              (before renaming/moving)
-        {destination} (string)                The path to the destination
-                                              file/dir (after renaming/moving)
-        {opts}        (UpdateImportsOptions)  Options for updating imports
+        {source}      (string)  The path to the source file/dir (before
+                                renaming/moving)
+        {destination} (string)  The path to the destination file/dir (after
+                                renaming/moving)
 
 
 
@@ -154,15 +153,13 @@ Job                                                                      *Job*
 
 
 
-M.gg_into_sed({gg_args}, {sed_args}, {range})                *M.gg_into_sed()*
-    Runs a gg job and pipes the results into a sed job
+M.ranged_sed({gg_job_results}, {sed_args})                    *M.ranged_sed()*
+    Runs a ranged sed command on the results of a gg job
 
 
     Parameters: ~
-        {gg_args}  (table)    The arguments to pass to gg
-        {sed_args} (table)    The arguments to pass to sed
-        {range}    (boolean)  Whether or not to call sed with a range
-                              specifier
+        {gg_job_results} (gg_json_results)  The results of the gg job
+        {sed_args}       (string)           The arguments to pass to sed
 
 
 M.gg({args})                                                          *M.gg()*
