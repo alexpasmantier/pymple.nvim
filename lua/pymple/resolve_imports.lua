@@ -40,7 +40,7 @@ function M.resolve_python_import(symbol)
     return
   end
   local cwd = vim.fn.getcwd()
-  local venv = utils.get_virtual_environment()
+  local venv = utils.get_virtual_environment(cwd)
   local site_packages_location = Path:new(utils.get_site_packages_location())
     :make_relative(cwd)
 
@@ -49,16 +49,17 @@ function M.resolve_python_import(symbol)
   table.insert(local_args, ".")
   local candidate_paths = jobs.find_import_candidates_in_workspace(local_args)
 
-  if venv and site_packages_location then
-    local venv_args = { "-f", "-t", "python", "-C", "-G" }
-    venv_args = add_symbol_regexes(venv_args, symbol)
-    table.insert(venv_args, site_packages_location)
-    local venv_candidates =
-      jobs.find_import_candidates_in_venv(venv_args, site_packages_location)
-    for _, candidate in ipairs(venv_candidates) do
-      table.insert(candidate_paths, candidate)
-    end
-  end
+  -- FIXME:
+  -- if venv and site_packages_location then
+  --   local venv_args = { "-f", "-t", "python", "-C", "-G" }
+  --   venv_args = add_symbol_regexes(venv_args, symbol)
+  --   table.insert(venv_args, site_packages_location)
+  --   local venv_candidates =
+  --     jobs.find_import_candidates_in_venv(venv_args, site_packages_location)
+  --   for _, candidate in ipairs(venv_candidates) do
+  --     table.insert(candidate_paths, candidate)
+  --   end
+  -- end
 
   local candidates = {}
 

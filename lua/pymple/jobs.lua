@@ -126,6 +126,23 @@ function M.gg_into_sed(gg_args, sed_args, range)
   }):start()
 end
 
+--- Runs a gg job and returns the results
+---@param args string[]: Arguments to pass to the `gg` command
+---@return gg_json_results: The results of the gg job
+function M.gg(args)
+  local job = Job:new({
+    command = utils.SHELL,
+    args = { "-c", "gg -C " .. table.concat(args, " ") },
+  })
+  job:sync()
+  local gg_results = {}
+  for _, file_result in ipairs(job:result()) do
+    local t = vim.json.decode(file_result)
+    table.insert(gg_results, t)
+  end
+  return gg_results
+end
+
 ---Finds import candidates in workspace
 ---@param args string[]: Arguments to pass to the `gg` command
 ---@return string[]: The import candidates

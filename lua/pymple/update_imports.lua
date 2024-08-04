@@ -33,8 +33,15 @@ from path.to.file import Something
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
-local function update_imports_split(source, destination, filetypes, _job)
-  local __job = _job or jobs.gg_into_sed
+local function update_imports_split(
+  source,
+  destination,
+  filetypes,
+  _sjob,
+  _rjob
+)
+  local __sjob = _sjob or jobs.gg
+  local __rjob = _rjob or jobs.ranged_sed
   local cwd = vim.fn.getcwd()
 
   local source_relative = Path:new(source):make_relative(cwd)
@@ -60,22 +67,21 @@ local function update_imports_split(source, destination, filetypes, _job)
     ),
     ".",
   }
-  local sed_args_base = {
-    "'%s,%ss/"
-      .. utils.escape_import_path(source_base_path)
-      .. "/"
-      .. utils.escape_import_path(destination_base_path)
-      .. "/'",
-  }
-  local sed_args_module = {
-    "'%s,%ss/"
-      .. utils.escape_import_path(source_module_name)
-      .. "/"
-      .. utils.escape_import_path(destination_module_name)
-      .. "/'",
-  }
-  __job(gg_args_split, sed_args_base, true)
-  __job(gg_args_split, sed_args_module, true)
+  local sed_args_base = "'%s,%ss/"
+    .. utils.escape_import_path(source_base_path)
+    .. "/"
+    .. utils.escape_import_path(destination_base_path)
+    .. "/'"
+
+  local sed_args_module = "'%s,%ss/"
+    .. utils.escape_import_path(source_module_name)
+    .. "/"
+    .. utils.escape_import_path(destination_module_name)
+    .. "/'"
+
+  local gg_results = __sjob(gg_args_split)
+  __rjob(gg_results, sed_args_base)
+  __rjob(gg_results, sed_args_module)
 end
 
 M.update_imports_split = update_imports_split
@@ -90,8 +96,15 @@ from path.to.dir import (
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
-local function update_imports_monolithic(source, destination, filetypes, _job)
-  local __job = _job or jobs.gg_into_sed
+local function update_imports_monolithic(
+  source,
+  destination,
+  filetypes,
+  _sjob,
+  _rjob
+)
+  local __sjob = _sjob or jobs.gg
+  local __rjob = _rjob or jobs.global_sed
   local cwd = vim.fn.getcwd()
 
   -- path/to/here
@@ -113,7 +126,8 @@ local function update_imports_monolithic(source, destination, filetypes, _job)
     utils.escape_import_path(source_import_path),
     utils.escape_import_path(destination_import_path)
   )
-  __job(gg_args, { sed_args }, false)
+  local gg_results = __sjob(gg_args)
+  __rjob(gg_results, sed_args)
 end
 
 M.update_imports_monolithic = update_imports_monolithic
