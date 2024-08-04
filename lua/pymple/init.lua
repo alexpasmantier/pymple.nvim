@@ -19,6 +19,7 @@ local api = require("pymple.api")
 local utils = require("pymple.utils")
 local print_err = utils.print_err
 local log = require("pymple.log")
+local hooks = require("pymple.hooks")
 
 --- Setup pymple.nvim with the provided configuration
 ---@param opts Config
@@ -41,13 +42,10 @@ local function setup(opts)
       "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
     )
   end
-  local function _update_imports(source, destination)
-    api.update_imports(source, destination, opts.update_imports)
-  end
 
   if opts.create_user_commands.update_imports then
     vim.api.nvim_create_user_command("UpdatePythonImports", function(args)
-      _update_imports(args.fargs[1], args.fargs[2])
+      api.update_imports(args.fargs[1], args.fargs[2])
     end, {
       desc = [[Update all imports in workspace after renaming `source` to
       `destination`]],
@@ -74,25 +72,7 @@ local function setup(opts)
   keymaps.setup_keymaps(opts.keymaps)
   log.debug("Set up keymaps")
 
-  -- TODO: integrate with other file tree plugins (nvim-tree, oil, etc.)
-  local neotree_installed, events = pcall(require, "neo-tree.events")
-  if neotree_installed then
-    log.debug(
-      "Found neo-tree installation, hooking up FILE_MOVED and FILE_RENAMED events"
-    )
-    events.subscribe({
-      event = events.FILE_MOVED,
-      handler = function(args)
-        _update_imports(args.source, args.destination)
-      end,
-    })
-    events.subscribe({
-      event = events.FILE_RENAMED,
-      handler = function(args)
-        _update_imports(args.source, args.destination)
-      end,
-    })
-  end
+  hooks.setup()
 end
 
 --- Setup pymple.nvim with the provided configuration

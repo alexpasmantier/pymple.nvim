@@ -4,6 +4,7 @@ local Path = require("plenary.path")
 local utils = require("pymple.utils")
 local jobs = require("pymple.jobs")
 local log = require("pymple.log")
+local pymple_telescope = require("pymple.telescope")
 
 -- to be formatted using the full import path to the renamed file/dir
 local SPLIT_IMPORT_REGEX =
@@ -21,6 +22,29 @@ local function build_filetypes_args(filetypes)
 end
 
 M.build_filetypes_args = build_filetypes_args
+
+local function update_imports_confirmation_dialog(gg_results, rj)
+  local files = {}
+  for _, result in ipairs(gg_results) do
+    table.insert(files, result.path)
+  end
+  if #files == 0 then
+    return
+  end
+  local unique_files = utils.deduplicate_list(files)
+  local message = string.format("Update imports in %d files?", #unique_files)
+  vim.ui.select({ "Yes", "No", "Preview changes" }, {
+    prompt = message,
+  }, function(selected)
+    if selected == "Yes" then
+      for _, rjob in ipairs(rj) do
+        rjob(gg_results)
+      end
+    elseif selected == "Preview changes" then
+      pymple_telescope.preview_files(unique_files, gg_results, rj)
+    end
+  end)
+end
 
 --[[
 from path.to.dir import file
@@ -80,8 +104,16 @@ local function update_imports_split(
     .. "/'"
 
   local gg_results = __sjob(gg_args_split)
-  __rjob(gg_results, sed_args_base)
-  __rjob(gg_results, sed_args_module)
+
+  local base_rjob = function(res)
+    __rjob(res, sed_args_base)
+  end
+  local module_rjob = function(res)
+    __rjob(res, sed_args_module)
+  end
+  local rjobs = { base_rjob, module_rjob }
+
+  update_imports_confirmation_dialog(gg_results, rjobs)
 end
 
 M.update_imports_split = update_imports_split
@@ -127,7 +159,11 @@ local function update_imports_monolithic(
     utils.escape_import_path(destination_import_path)
   )
   local gg_results = __sjob(gg_args)
-  __rjob(gg_results, sed_args)
+  local rjob = function(res)
+    __rjob(res, sed_args)
+  end
+
+  update_imports_confirmation_dialog(gg_results, { rjob })
 end
 
 M.update_imports_monolithic = update_imports_monolithic
@@ -147,7 +183,7 @@ function M.update_imports(source, destination, filetypes)
     log.debug("Updating imports monolithic")
     update_imports_monolithic(source, destination, filetypes)
   end
-  utils.async_refresh_buffers(DEFAULT_HANG_TIME)
+  utils.async_refresh_buffers(utils.DEFAULT_HANG_TIME)
 end
 
 return M

@@ -42,6 +42,8 @@ local optional_dependencies = {
 
 local required_plugins = {
   { lib = "plenary", optional = false },
+  { lib = "telescope", optional = false },
+  { lib = "nvim-treesitter", optional = true },
   { lib = "neo-tree", optional = true },
 }
 

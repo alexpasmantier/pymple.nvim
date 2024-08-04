@@ -90,8 +90,8 @@ end
 ---Update all imports in workspace after renaming `source` to `destination`
 ---@param source string: The path to the source file/dir (before renaming/moving)
 ---@param destination string: The path to the destination file/dir (after renaming/moving)
----@param opts UpdateImportsOptions: Options for updating imports
-M.update_imports = function(source, destination, opts)
+M.update_imports = function(source, destination)
+  local opts = config.user_config.update_imports
   log.debug(
     "Updating imports from "
       .. source

@@ -274,4 +274,29 @@ function M.longest_string_in_list(list)
   return longest
 end
 
+---Deduplicate a list of elements
+---@param list any[]: The list of elements
+---@return any[]: The deduplicated list
+function M.deduplicate_list(list)
+  local seen = {}
+  local result = {}
+  for _, item in ipairs(list) do
+    if not seen[item] then
+      table.insert(result, item)
+      seen[item] = true
+    end
+  end
+  return result
+end
+
+---Make a list of files relative to current directory
+---@param files string[]: The list of files
+function M.make_files_relative(files)
+  local result = {}
+  for _, file in ipairs(files) do
+    table.insert(result, vim.fn.fnamemodify(file, ":."))
+  end
+  return result
+end
+
 return M
