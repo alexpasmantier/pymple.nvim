@@ -10,11 +10,20 @@ describe("gg", function()
     local expected = vim.json.decode(
       '[{"path":"'
         .. cwd
-        .. '/lua/tests/fixtures/jobs/gg/folder_1/file.py","results":[{"line_number":1,"line":"print(\\"foo\\")\\n","line_start":1,"line_end":1,"matches":[{"start":7,"end":10}]}]},'
+        .. "/"
+        .. FIXTURES_PATH
+        .. '/gg/folder_1/file.py",'
+        .. '"results":[{"line_number":1,"line":"print(\\"foo\\")\\n","line_start":1,"line_end":1,"matches":[{"start":7,"end":10}]}]},'
         .. '{"path":"'
         .. cwd
-        .. '/lua/tests/fixtures/jobs/gg/folder_1/file.txt","results":[{"line_number":1,"line":"foo bar baz\\n","line_start":1,"line_end":1,"matches":[{"start":0,"end":3}]}]}]'
+        .. "/"
+        .. FIXTURES_PATH
+        .. '/gg/folder_1/file.txt",'
+        .. '"results":[{"line_number":1,"line":"foo bar baz\\n","line_start":1,"line_end":1,"matches":[{"start":0,"end":3}]}]}]'
     )
+    table.sort(gg_results, function(a, b)
+      return a.path < b.path
+    end)
 
     assert.are.same(expected, gg_results)
   end)
