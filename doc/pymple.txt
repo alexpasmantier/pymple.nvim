@@ -148,6 +148,17 @@ M.gg_into_sed({gg_args}, {sed_args}, {range})                *M.gg_into_sed()*
                               specifier
 
 
+M.gg({args})                                                          *M.gg()*
+    Runs a gg job and returns the results
+
+
+    Parameters: ~
+        {args} (string[])  Arguments to pass to the `gg` command
+
+    Return: ~
+        gg_json_results: The results of the gg job
+
+
 M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
     Finds import candidates in workspace
 
