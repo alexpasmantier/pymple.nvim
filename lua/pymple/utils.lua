@@ -3,7 +3,8 @@ M = {}
 local filetype = require("plenary.filetype")
 local cfg = require("pymple.config")
 local log = require("pymple.log")
-local ts_utils = require("nvim-treesitter.ts_utils")
+
+local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 
 ---@type number: The time to wait before refreshing open buffers
 local DEFAULT_HANG_TIME = 1000
@@ -249,6 +250,9 @@ end
 ---Check if the current node is an identifier using tree-sitter
 ---@return boolean, string|nil: Whether or not the current node is an identifier
 function M.is_cursor_node_identifier()
+  if not ts_utils then
+    return true, nil
+  end
   local node = ts_utils.get_node_at_cursor()
   if not node then
     return false, nil
