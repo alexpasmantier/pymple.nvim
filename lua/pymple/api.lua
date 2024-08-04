@@ -42,19 +42,14 @@ M.add_import_for_symbol_under_cursor = function()
     return
   end
 
-  local message = {}
-  for i, import_path in ipairs(candidates) do
-    table.insert(message, string.format("%s: ", i) .. import_path)
-  end
-  local user_input =
-    vim.fn.input(table.concat(message, "\n") .. "\nSelect an import: ")
-  local chosen_import = candidates[tonumber(user_input)]
-  if chosen_import then
-    utils.add_import_to_current_buf(chosen_import, symbol)
-    print_info("Added import for " .. symbol .. ": " .. chosen_import)
-  else
-    print_err("Invalid selection")
-  end
+  vim.ui.select(candidates, {
+    prompt = "Select an import",
+  }, function(selected)
+    if selected then
+      utils.add_import_to_buffer(selected, symbol, 0)
+      print_info("Added import for " .. symbol .. ": " .. selected)
+    end
+  end)
 end
 
 ---Update all imports in workspace after renaming `source` to `destination`
