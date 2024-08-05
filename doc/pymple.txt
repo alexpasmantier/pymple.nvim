@@ -149,8 +149,40 @@ Pymple's jobs module exposes functions that run jobs in the background. These
 will typically be used for tasks like searching for import candidates or
 updating imports in the workspace using `gg` and `sed`.
 
-Job                                                                      *Job*
+GGJsonMatch                                                      *GGJsonMatch*
 
+
+    Fields: ~
+        {start} (number)
+        {end}   (number)
+
+
+GGJsonSearchResult                                        *GGJsonSearchResult*
+
+
+    Fields: ~
+        {line_number} (number)
+        {line}        (string)
+        {line_start}  (number)
+        {line_end}    (number)
+        {matches}     (GGJsonMatch[])
+
+
+GGJsonResult                                                    *GGJsonResult*
+
+
+    Fields: ~
+        {path}    (string)
+        {results} (GGJsonSearchResult[])
+
+
+M.global_sed({gg_job_results}, {sed_args})                    *M.global_sed()*
+    Runs a global sed command on the results of a gg job
+
+
+    Parameters: ~
+        {gg_job_results} (GGJsonResult[])  The results of the gg job
+        {sed_args}       (string)          The arguments to pass to sed
 
 
 M.ranged_sed({gg_job_results}, {sed_args})                    *M.ranged_sed()*
@@ -158,8 +190,8 @@ M.ranged_sed({gg_job_results}, {sed_args})                    *M.ranged_sed()*
 
 
     Parameters: ~
-        {gg_job_results} (gg_json_results)  The results of the gg job
-        {sed_args}       (string)           The arguments to pass to sed
+        {gg_job_results} (GGJsonResult[])  The results of the gg job
+        {sed_args}       (string)          The arguments to pass to sed
 
 
 M.gg({args})                                                          *M.gg()*
@@ -170,7 +202,7 @@ M.gg({args})                                                          *M.gg()*
         {args} (string[])  Arguments to pass to the `gg` command
 
     Return: ~
-        gg_json_results: The results of the gg job
+        GGJsonResult[]: The results of the gg job
 
 
 M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
