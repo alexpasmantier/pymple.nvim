@@ -43,6 +43,12 @@ log.off_config = {
   use_console = false,
   use_file = false,
 }
+-- turns log.* into a no-op until instantiated (instead of an error)
+setmetatable(log, {
+  __index = function(_, k)
+    return function(_) end
+  end,
+})
 
 local unpack = unpack or table.unpack
 

@@ -8,7 +8,6 @@ M = {}
 
 local Job = require("plenary.job")
 local utils = require("pymple.utils")
-local config = require("pymple.config")
 local log = require("pymple.log")
 
 ---@class GGJsonMatch
@@ -150,8 +149,6 @@ function M.find_import_candidates_in_venv(args, site_packages_location)
           local result = (result:sub(0, #prefix) == prefix)
               and result:sub(#prefix + 1)
             or result
-          P(result)
-          P(site_packages_location)
           table.insert(candidates, result)
         end
       end
