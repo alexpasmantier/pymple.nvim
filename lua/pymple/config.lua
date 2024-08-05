@@ -39,6 +39,11 @@
 ---     -- actually do anything useful
 ---     filetypes = { "python", "markdown" },
 ---   },
+---   -- options for the add import to buffer feature
+---   add_import_to_buf = {
+---     -- whether to autosave the buffer after adding the import
+---     autosave = true,
+---   },
 ---   -- logging options
 ---   logging = {
 ---     -- whether to enable logging
@@ -117,12 +122,27 @@ local default_python_options = {
   virtual_env_names = { ".venv" },
 }
 
----@alias Config { keymaps: Keymaps, create_user_commands: UserCommandOptions, update_imports: UpdateImportsOptions, logging: LoggingOptions, python: PythonOptions}
+---@alias AddImportToBufOptions { autosave: boolean }
 
+---@type AddImportToBufOptions
+local default_add_import_to_buf_options = {
+  autosave = true,
+}
+
+---@class Config
+---@field keymaps Keymaps
+---@field create_user_commands UserCommandOptions
+---@field update_imports UpdateImportsOptions
+---@field logging LoggingOptions
+---@field python PythonOptions
+---@field add_import_to_buf AddImportToBufOptions
+
+---@type Config
 local default_config = {
   keymaps = default_keymaps,
   create_user_commands = default_user_command_options,
   update_imports = default_update_imports_options,
+  add_import_to_buf = default_add_import_to_buf_options,
   logging = default_logging_options,
   python = default_python_options,
 }
@@ -131,10 +151,10 @@ local default_config = {
 M.default_config = default_config
 
 ---@param opts Config
-function M.set_config(opts)
-  M.config = vim.tbl_deep_extend("force", default_config, opts)
+function M.set_user_config(opts)
+  M.user_config = vim.tbl_deep_extend("force", default_config, opts)
 end
 
-M.set_config(M.default_config)
+M.set_user_config(M.default_config)
 
 return M

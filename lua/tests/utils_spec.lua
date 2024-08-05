@@ -222,3 +222,43 @@ describe("table_contains", function()
     assert.is_false(result)
   end)
 end)
+
+describe("longest_string_in_list", function()
+  it("std", function()
+    local result = utils.longest_string_in_list({ "fooo", "fo", "foo" })
+    assert.equals("fooo", result)
+  end)
+
+  it("empty list", function()
+    local result = utils.longest_string_in_list({})
+    assert.equals(nil, result)
+  end)
+end)
+
+describe("deduplicate_list", function()
+  it("std", function()
+    local result = utils.deduplicate_list({ "foo", "bar", "foo", "baz" })
+    assert.same({ "foo", "bar", "baz" }, result)
+  end)
+
+  it("empty list", function()
+    local result = utils.deduplicate_list({})
+    assert.same({}, result)
+  end)
+end)
+
+describe("map", function()
+  it("std", function()
+    local result = utils.map(function(x)
+      return x * 2
+    end, { 1, 2, 3 })
+    assert.same({ 2, 4, 6 }, result)
+  end)
+
+  it("empty list", function()
+    local result = utils.map(function(x)
+      return x * 2
+    end, {})
+    assert.same({}, result)
+  end)
+end)

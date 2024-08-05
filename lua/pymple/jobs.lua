@@ -8,60 +8,53 @@ M = {}
 
 local Job = require("plenary.job")
 local utils = require("pymple.utils")
-local config = require("pymple.config")
 local log = require("pymple.log")
 
----@class Job
----@field command string Command to run
----@field args? string[] List of arguments to pass
----@field cwd? string Working directory for job
----@field env? table<string, string>|string[] Environment looking like: { ['VAR'] = 'VALUE' } or { 'VAR=VALUE' }
----@field interactive? boolean
----@field detached? boolean Spawn the child in a detached state making it a process group leader
----@field skip_validation? boolean Skip validating the arguments
----@field enable_handlers? boolean If set to false, disables all callbacks associated with output (default: true)
----@field enabled_recording? boolean
----@field on_start? fun()
----@field on_stdout? fun(error: string, data: string, self?: Job)
----@field on_stderr? fun(error: string, data: string, self?: Job)
----@field on_exit? fun(self: Job, code: number, signal: number)
----@field maximum_results? number Stop processing results after this number
----@field writer? Job|table|string Job that writes to stdin of this job.
+---@class GGJsonMatch
+---@field start number
+---@field end number
 
----@alias gg_json_matches {start: number, end: number}
----@alias gg_json_search_result {line_number: number, line: string, line_start: number, line_end: number, matches: gg_json_matches[]}
----@alias gg_json_search_results gg_json_search_result[]
----@alias gg_json_result {path: string, results: gg_json_search_results}
----@alias gg_json_results gg_json_result[]
+---@class GGJsonSearchResult
+---@field line_number number
+---@field line string
+---@field line_start number
+---@field line_end number
+---@field matches GGJsonMatch[]
+
+---@class GGJsonResult
+---@field path string
+---@field results GGJsonSearchResult[]
 
 --- Runs a global sed command on the results of a gg job
----@param gg_job_results gg_json_results: The results of the gg job
----@param sed_args table: The arguments to pass to sed
-local function global_sed(gg_job_results, sed_args)
+---@param gg_job_results GGJsonResult[]: The results of the gg job
+---@param sed_args string: The arguments to pass to sed
+function M.global_sed(gg_job_results, sed_args)
   local file_paths = {}
   for _, result in ipairs(gg_job_results) do
     table.insert(file_paths, result.path)
   end
+  file_paths = utils.deduplicate_list(file_paths)
   if #file_paths == 0 then
     return
   end
-  local sed_args = table.concat(sed_args, " ")
+  local sed_command = "sed -i '' "
+    .. sed_args
     .. " "
     .. table.concat(file_paths, " ")
-  log.debug("Sed args: " .. sed_args)
+  log.debug("Sed command: " .. sed_command)
   Job:new({
     command = "zsh",
     args = {
       "-c",
-      "sed -i '' " .. sed_args,
+      sed_command,
     },
   }):start()
 end
 
 --- Runs a ranged sed command on the results of a gg job
----@param gg_job_results gg_json_results: The results of the gg job
----@param sed_args table: The arguments to pass to sed
-local function ranged_sed(gg_job_results, sed_args)
+---@param gg_job_results GGJsonResult[]: The results of the gg job
+---@param sed_args string: The arguments to pass to sed
+function M.ranged_sed(gg_job_results, sed_args)
   local matches = {}
   for _, file_result in ipairs(gg_job_results) do
     for _, search_result in ipairs(file_result.results) do
@@ -86,44 +79,36 @@ local function ranged_sed(gg_job_results, sed_args)
         .. " line end: "
         .. match.lines[2]
     )
-    local sed_args =
-      string.format(table.concat(sed_args, " "), match.lines[1], match.lines[2])
-    log.debug("Sed args: " .. sed_args .. match.path)
+    local sed_command = "sed -i ''"
+      .. string.format(sed_args, match.lines[1], match.lines[2])
+      .. " "
+      .. match.path
+    log.debug("Sed command: " .. sed_command)
     Job:new({
       command = utils.SHELL,
-      args = {
-        "-c",
-        "sed -i '' " .. sed_args .. " " .. match.path,
-      },
+      args = { "-c", sed_command },
     }):start()
   end
 end
 
---- Runs a gg job and pipes the results into a sed job
----@param gg_args table: The arguments to pass to gg
----@param sed_args table: The arguments to pass to sed
----@param range boolean: Whether or not to call sed with a range specifier
-function M.gg_into_sed(gg_args, sed_args, range)
-  log.debug("gg args: " .. table.concat(gg_args, " "))
-  Job:new({
+--- Runs a gg job and returns the results
+---@param args string[]: Arguments to pass to the `gg` command
+---@return GGJsonResult[]: The results of the gg job
+function M.gg(args)
+  local subcommand = "gg -C " .. table.concat(args, " ")
+  log.debug("Starting gg job: " .. subcommand)
+  local job = Job:new({
     command = utils.SHELL,
-    args = { "-c", "gg " .. table.concat(gg_args, " ") },
-    on_exit = function(job, _)
-      local gg_results = {}
-      for _, file_result in ipairs(job:result()) do
-        local t = vim.json.decode(file_result)
-        table.insert(gg_results, t)
-      end
-      log.debug(#gg_results .. " results found")
-      if range then
-        log.debug("Using ranged sed")
-        ranged_sed(gg_results, sed_args)
-      else
-        log.debug("Using global sed")
-        global_sed(gg_results, sed_args)
-      end
-    end,
-  }):start()
+    args = { "-c", subcommand },
+  })
+  job:sync()
+  local gg_results = {}
+  for _, file_result in ipairs(job:result()) do
+    local t = vim.json.decode(file_result)
+    table.insert(gg_results, t)
+  end
+  log.debug(#gg_results .. " results found")
+  return gg_results
 end
 
 ---Finds import candidates in workspace
@@ -164,8 +149,6 @@ function M.find_import_candidates_in_venv(args, site_packages_location)
           local result = (result:sub(0, #prefix) == prefix)
               and result:sub(#prefix + 1)
             or result
-          P(result)
-          P(site_packages_location)
           table.insert(candidates, result)
         end
       end

@@ -4,6 +4,7 @@ local Path = require("plenary.path")
 local utils = require("pymple.utils")
 local jobs = require("pymple.jobs")
 local log = require("pymple.log")
+local pymple_telescope = require("pymple.telescope")
 
 -- to be formatted using the full import path to the renamed file/dir
 local SPLIT_IMPORT_REGEX =
@@ -22,6 +23,30 @@ end
 
 M.build_filetypes_args = build_filetypes_args
 
+local function update_imports_confirmation_dialog(gg_results, rj)
+  local files = {}
+  for _, result in ipairs(gg_results) do
+    table.insert(files, result.path)
+  end
+  if #files == 0 then
+    return
+  end
+  local unique_files = utils.deduplicate_list(files)
+  local message = string.format("Update imports in %d files?", #unique_files)
+  vim.ui.select({ "Yes", "No", "Preview changes" }, {
+    prompt = message,
+  }, function(selected)
+    if selected == "Yes" then
+      for _, rjob in ipairs(rj) do
+        rjob(gg_results)
+      end
+    elseif selected == "Preview changes" then
+      utils.print_msg("Change preview is currently a work in progress...")
+      -- pymple_telescope.preview_files(gg_results, rj)
+    end
+  end)
+end
+
 --[[
 from path.to.dir import file
 from path.to.dir import (
@@ -33,8 +58,20 @@ from path.to.file import Something
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
-local function update_imports_split(source, destination, filetypes, _job)
-  local __job = _job or jobs.gg_into_sed
+---@param _sjob function: The job to run the gg command
+---@param _rjob function: The job to run the sed command
+---@param _confirm function: The function to confirm the changes
+local function update_imports_split(
+  source,
+  destination,
+  filetypes,
+  _sjob,
+  _rjob,
+  _confirm
+)
+  local __sjob = _sjob or jobs.gg
+  local __rjob = _rjob or jobs.ranged_sed
+  local confirm = _confirm or update_imports_confirmation_dialog
   local cwd = vim.fn.getcwd()
 
   local source_relative = Path:new(source):make_relative(cwd)
@@ -60,22 +97,29 @@ local function update_imports_split(source, destination, filetypes, _job)
     ),
     ".",
   }
-  local sed_args_base = {
-    "'%s,%ss/"
-      .. utils.escape_import_path(source_base_path)
-      .. "/"
-      .. utils.escape_import_path(destination_base_path)
-      .. "/'",
-  }
-  local sed_args_module = {
-    "'%s,%ss/"
-      .. utils.escape_import_path(source_module_name)
-      .. "/"
-      .. utils.escape_import_path(destination_module_name)
-      .. "/'",
-  }
-  __job(gg_args_split, sed_args_base, true)
-  __job(gg_args_split, sed_args_module, true)
+  local sed_args_base = "'%s,%ss/"
+    .. utils.escape_import_path(source_base_path)
+    .. "/"
+    .. utils.escape_import_path(destination_base_path)
+    .. "/'"
+
+  local sed_args_module = "'%s,%ss/"
+    .. utils.escape_import_path(source_module_name)
+    .. "/"
+    .. utils.escape_import_path(destination_module_name)
+    .. "/'"
+
+  local gg_results = __sjob(gg_args_split)
+
+  local base_rjob = function(res)
+    __rjob(res, sed_args_base)
+  end
+  local module_rjob = function(res)
+    __rjob(res, sed_args_module)
+  end
+  local rjobs = { base_rjob, module_rjob }
+
+  confirm(gg_results, rjobs)
 end
 
 M.update_imports_split = update_imports_split
@@ -90,8 +134,17 @@ from path.to.dir import (
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
-local function update_imports_monolithic(source, destination, filetypes, _job)
-  local __job = _job or jobs.gg_into_sed
+local function update_imports_monolithic(
+  source,
+  destination,
+  filetypes,
+  _sjob,
+  _rjob,
+  _confirm
+)
+  local __sjob = _sjob or jobs.gg
+  local __rjob = _rjob or jobs.global_sed
+  local confirm = _confirm or update_imports_confirmation_dialog
   local cwd = vim.fn.getcwd()
 
   -- path/to/here
@@ -113,7 +166,12 @@ local function update_imports_monolithic(source, destination, filetypes, _job)
     utils.escape_import_path(source_import_path),
     utils.escape_import_path(destination_import_path)
   )
-  __job(gg_args, { sed_args }, false)
+  local gg_results = __sjob(gg_args)
+  local rjob = function(res)
+    __rjob(res, sed_args)
+  end
+
+  confirm(gg_results, { rjob })
 end
 
 M.update_imports_monolithic = update_imports_monolithic
@@ -133,7 +191,7 @@ function M.update_imports(source, destination, filetypes)
     log.debug("Updating imports monolithic")
     update_imports_monolithic(source, destination, filetypes)
   end
-  utils.async_refresh_buffers(DEFAULT_HANG_TIME)
+  utils.async_refresh_buffers(utils.DEFAULT_HANG_TIME)
 end
 
 return M

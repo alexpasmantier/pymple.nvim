@@ -63,6 +63,11 @@ config = {
     -- actually do anything useful
     filetypes = { "python", "markdown" },
   },
+  -- options for the add import to buffer feature
+  add_import_to_buf = {
+    -- whether to autosave the buffer after adding the import
+    autosave = true,
+  },
   -- logging options
   logging = {
     -- whether to enable logging
@@ -85,6 +90,18 @@ config = {
   },
 }
 ```
+
+Config                                                                *Config*
+
+
+    Fields: ~
+        {keymaps}              (Keymaps)
+        {create_user_commands} (UserCommandOptions)
+        {update_imports}       (UpdateImportsOptions)
+        {logging}              (LoggingOptions)
+        {python}               (PythonOptions)
+        {add_import_to_buf}    (AddImportToBufOptions)
+
 
 M.HL_GROUPS()                                                  *M.HL_GROUPS()*
 
@@ -113,16 +130,15 @@ M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
 
 
 
-M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
+M.update_imports({source}, {destination})                 *M.update_imports()*
     Update all imports in workspace after renaming `source` to `destination`
 
 
     Parameters: ~
-        {source}      (string)                The path to the source file/dir
-                                              (before renaming/moving)
-        {destination} (string)                The path to the destination
-                                              file/dir (after renaming/moving)
-        {opts}        (UpdateImportsOptions)  Options for updating imports
+        {source}      (string)  The path to the source file/dir (before
+                                renaming/moving)
+        {destination} (string)  The path to the destination file/dir (after
+                                renaming/moving)
 
 
 
@@ -133,19 +149,60 @@ Pymple's jobs module exposes functions that run jobs in the background. These
 will typically be used for tasks like searching for import candidates or
 updating imports in the workspace using `gg` and `sed`.
 
-Job                                                                      *Job*
+GGJsonMatch                                                      *GGJsonMatch*
 
 
+    Fields: ~
+        {start} (number)
+        {end}   (number)
 
-M.gg_into_sed({gg_args}, {sed_args}, {range})                *M.gg_into_sed()*
-    Runs a gg job and pipes the results into a sed job
+
+GGJsonSearchResult                                        *GGJsonSearchResult*
+
+
+    Fields: ~
+        {line_number} (number)
+        {line}        (string)
+        {line_start}  (number)
+        {line_end}    (number)
+        {matches}     (GGJsonMatch[])
+
+
+GGJsonResult                                                    *GGJsonResult*
+
+
+    Fields: ~
+        {path}    (string)
+        {results} (GGJsonSearchResult[])
+
+
+M.global_sed({gg_job_results}, {sed_args})                    *M.global_sed()*
+    Runs a global sed command on the results of a gg job
 
 
     Parameters: ~
-        {gg_args}  (table)    The arguments to pass to gg
-        {sed_args} (table)    The arguments to pass to sed
-        {range}    (boolean)  Whether or not to call sed with a range
-                              specifier
+        {gg_job_results} (GGJsonResult[])  The results of the gg job
+        {sed_args}       (string)          The arguments to pass to sed
+
+
+M.ranged_sed({gg_job_results}, {sed_args})                    *M.ranged_sed()*
+    Runs a ranged sed command on the results of a gg job
+
+
+    Parameters: ~
+        {gg_job_results} (GGJsonResult[])  The results of the gg job
+        {sed_args}       (string)          The arguments to pass to sed
+
+
+M.gg({args})                                                          *M.gg()*
+    Runs a gg job and returns the results
+
+
+    Parameters: ~
+        {args} (string[])  Arguments to pass to the `gg` command
+
+    Return: ~
+        GGJsonResult[]: The results of the gg job
 
 
 M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
