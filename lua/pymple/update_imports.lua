@@ -41,7 +41,8 @@ local function update_imports_confirmation_dialog(gg_results, rj)
         rjob(gg_results)
       end
     elseif selected == "Preview changes" then
-      pymple_telescope.preview_files(gg_results, rj)
+      utils.print_msg("Change preview is currently a work in progress...")
+      -- pymple_telescope.preview_files(gg_results, rj)
     end
   end)
 end
