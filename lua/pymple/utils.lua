@@ -299,4 +299,16 @@ function M.make_files_relative(files)
   return result
 end
 
+---Map a function over a list
+---@param func function: The function to map
+---@param list any[]: The list to map over
+---@return any[]: The mapped list
+function M.map(func, list)
+  local mapped = {}
+  for _, item in ipairs(list) do
+    table.insert(mapped, func(item))
+  end
+  return mapped
+end
+
 return M

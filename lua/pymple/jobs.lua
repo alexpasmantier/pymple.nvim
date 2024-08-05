@@ -11,37 +11,30 @@ local utils = require("pymple.utils")
 local config = require("pymple.config")
 local log = require("pymple.log")
 
----@class Job
----@field command string Command to run
----@field args? string[] List of arguments to pass
----@field cwd? string Working directory for job
----@field env? table<string, string>|string[] Environment looking like: { ['VAR'] = 'VALUE' } or { 'VAR=VALUE' }
----@field interactive? boolean
----@field detached? boolean Spawn the child in a detached state making it a process group leader
----@field skip_validation? boolean Skip validating the arguments
----@field enable_handlers? boolean If set to false, disables all callbacks associated with output (default: true)
----@field enabled_recording? boolean
----@field on_start? fun()
----@field on_stdout? fun(error: string, data: string, self?: Job)
----@field on_stderr? fun(error: string, data: string, self?: Job)
----@field on_exit? fun(self: Job, code: number, signal: number)
----@field maximum_results? number Stop processing results after this number
----@field writer? Job|table|string Job that writes to stdin of this job.
+---@class GGJsonMatch
+---@field start number
+---@field end number
 
----@alias gg_json_matches {start: number, end: number}
----@alias gg_json_search_result {line_number: number, line: string, line_start: number, line_end: number, matches: gg_json_matches[]}
----@alias gg_json_search_results gg_json_search_result[]
----@alias gg_json_result {path: string, results: gg_json_search_results}
----@alias gg_json_results gg_json_result[]
+---@class GGJsonSearchResult
+---@field line_number number
+---@field line string
+---@field line_start number
+---@field line_end number
+---@field matches GGJsonMatch[]
+
+---@class GGJsonResult
+---@field path string
+---@field results GGJsonSearchResult[]
 
 --- Runs a global sed command on the results of a gg job
----@param gg_job_results gg_json_results: The results of the gg job
+---@param gg_job_results GGJsonResult[]: The results of the gg job
 ---@param sed_args string: The arguments to pass to sed
 function M.global_sed(gg_job_results, sed_args)
   local file_paths = {}
   for _, result in ipairs(gg_job_results) do
     table.insert(file_paths, result.path)
   end
+  file_paths = utils.deduplicate_list(file_paths)
   if #file_paths == 0 then
     return
   end
@@ -60,7 +53,7 @@ function M.global_sed(gg_job_results, sed_args)
 end
 
 --- Runs a ranged sed command on the results of a gg job
----@param gg_job_results gg_json_results: The results of the gg job
+---@param gg_job_results GGJsonResult[]: The results of the gg job
 ---@param sed_args string: The arguments to pass to sed
 function M.ranged_sed(gg_job_results, sed_args)
   local matches = {}
@@ -101,7 +94,7 @@ end
 
 --- Runs a gg job and returns the results
 ---@param args string[]: Arguments to pass to the `gg` command
----@return gg_json_results: The results of the gg job
+---@return GGJsonResult[]: The results of the gg job
 function M.gg(args)
   local subcommand = "gg -C " .. table.concat(args, " ")
   log.debug("Starting gg job: " .. subcommand)

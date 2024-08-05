@@ -41,7 +41,7 @@ local function update_imports_confirmation_dialog(gg_results, rj)
         rjob(gg_results)
       end
     elseif selected == "Preview changes" then
-      pymple_telescope.preview_files(unique_files, gg_results, rj)
+      pymple_telescope.preview_files(gg_results, rj)
     end
   end)
 end
