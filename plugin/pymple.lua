@@ -16,17 +16,25 @@ local required_binaries = {
     name = "gg",
     binary = "gg",
     help = "https://github.com/alexpasmantier/grip-grab",
+    min_version = "0.2.20",
   },
 }
 
 for _, binary in ipairs(required_binaries) do
-  if not utils.check_binary_installed(binary.binary) then
+  local installed, version = utils.check_binary_installed(binary.binary)
+
+  if not installed then
     utils.print_err(
       "Binary "
         .. binary.name
         .. " is not installed. Please install it to use pymple.nvim. For more information, see "
         .. binary.help
     )
+  end
+
+  -- TODO: finish this
+  if installed and version then
+    print("Found " .. binary.name .. " version: " .. version)
   end
 end
 

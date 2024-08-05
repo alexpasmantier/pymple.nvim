@@ -116,9 +116,11 @@ end
 ---@return string[]: The import candidates
 function M.find_import_candidates_in_workspace(args)
   local candidates = {}
+  local gg_command = "gg " .. table.concat(args, " ")
+  log.debug("GG command: " .. gg_command)
   local job = Job:new({
     command = utils.SHELL,
-    args = { "-c", "gg " .. table.concat(args, " ") },
+    args = { "-c", gg_command },
     on_exit = function(job, _)
       local results = job:result()
       if #results ~= 0 then
