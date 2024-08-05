@@ -263,8 +263,11 @@ end
 
 ---Get the longest string in a list
 ---@param list string[]: The list of strings
----@return string: The longest string in the list
+---@return string | nil: The longest string in the list
 function M.longest_string_in_list(list)
+  if #list == 0 then
+    return nil
+  end
   local longest = ""
   for _, str in ipairs(list) do
     if #str > #longest then

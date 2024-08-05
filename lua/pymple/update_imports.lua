@@ -58,15 +58,20 @@ from path.to.file import Something
 ---@param source string: The path to the source file/dir
 ---@param destination string: The path to the destination file/dir
 ---@param filetypes string[]: The filetypes to update imports for
+---@param _sjob function: The job to run the gg command
+---@param _rjob function: The job to run the sed command
+---@param _confirm function: The function to confirm the changes
 local function update_imports_split(
   source,
   destination,
   filetypes,
   _sjob,
-  _rjob
+  _rjob,
+  _confirm
 )
   local __sjob = _sjob or jobs.gg
   local __rjob = _rjob or jobs.ranged_sed
+  local confirm = _confirm or update_imports_confirmation_dialog
   local cwd = vim.fn.getcwd()
 
   local source_relative = Path:new(source):make_relative(cwd)
@@ -114,7 +119,7 @@ local function update_imports_split(
   end
   local rjobs = { base_rjob, module_rjob }
 
-  update_imports_confirmation_dialog(gg_results, rjobs)
+  confirm(gg_results, rjobs)
 end
 
 M.update_imports_split = update_imports_split
@@ -134,10 +139,12 @@ local function update_imports_monolithic(
   destination,
   filetypes,
   _sjob,
-  _rjob
+  _rjob,
+  _confirm
 )
   local __sjob = _sjob or jobs.gg
   local __rjob = _rjob or jobs.global_sed
+  local confirm = _confirm or update_imports_confirmation_dialog
   local cwd = vim.fn.getcwd()
 
   -- path/to/here
@@ -164,7 +171,7 @@ local function update_imports_monolithic(
     __rjob(res, sed_args)
   end
 
-  update_imports_confirmation_dialog(gg_results, { rjob })
+  confirm(gg_results, { rjob })
 end
 
 M.update_imports_monolithic = update_imports_monolithic
