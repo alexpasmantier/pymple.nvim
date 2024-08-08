@@ -41,3 +41,5 @@ describe("gg", function()
     assert.are.same(expected, gg_results)
   end)
 end)
+
+describe("")

@@ -58,8 +58,12 @@ end
 
 ---Converts a path to an import path
 ---@param module_path string: The path to a python module
+---@param python_root string: The root of the python project
 ---@return string: The import path for the module
-function M.to_import_path(module_path)
+function M.to_import_path(module_path, python_root)
+  -- TODO: add logic to find python root
+  python_root = python_root or vim.fn.getcwd()
+  module_path = module_path:gsub(python_root, "")
   local result, _ = module_path:gsub("/", "."):gsub("%.py$", "")
   return result
 end

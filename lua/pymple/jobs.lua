@@ -4,6 +4,13 @@
 --- These will typically be used for tasks like searching for import candidates
 --- or updating imports in the workspace using `gg` and `sed`.
 ---@brief ]]
+
+---@class Jobs
+---@field global_sed fun(gg_job_results: GGJsonResult[], sed_args: string): nil
+---@field ranged_sed fun(gg_job_results: GGJsonResult[], sed_args: string): nil
+---@field gg fun(args: string[]): GGJsonResult[]
+---@field find_import_candidates_in_workspace fun(args: string[]): string[]
+---@field find_import_candidates_in_venv fun(args: string[], site_packages_location: string): string[]
 M = {}
 
 local Job = require("plenary.job")
@@ -47,6 +54,19 @@ function M.global_sed(gg_job_results, sed_args)
     args = {
       "-c",
       sed_command,
+    },
+  }):start()
+end
+
+--- Runs a sed command
+---@param pattern string: The pattern to pass to sed
+---@param file_path string: The path to the file to run the sed command on
+function M.sed(pattern, file_path)
+  Job:new({
+    command = "zsh",
+    args = {
+      "-c",
+      "sed -i '' " .. pattern,
     },
   }):start()
 end
@@ -158,6 +178,103 @@ function M.find_import_candidates_in_venv(args, site_packages_location)
   })
   job:sync()
   return candidates
+end
+
+---------------------------------------------------
+
+-- to be formatted using the full import path to the renamed file/dir
+local SPLIT_IMPORT_REGEX =
+  [[from\s+%s\s+import\s+\(?\n?[\sa-zA-Z0-9_,\n]+\)?\s*$]]
+
+---@param filetypes string[]
+---@return string[]
+local function build_filetypes_args(filetypes)
+  local args = {}
+  for _, filetype in ipairs(filetypes) do
+    table.insert(args, "-t")
+    table.insert(args, filetype)
+  end
+  return args
+end
+
+M.build_filetypes_args = build_filetypes_args
+
+---@param import_path string: The import path to replace
+---@param filetypes string[]: The filetypes to search for
+---@param split boolean: Whether to look for split import or not (default: false)
+---@return string
+local make_gg_args = function(import_path, filetypes, split)
+  if split then
+    local head, _ = utils.split_import_path(import_path)
+    return table.concat({
+      "--json",
+      "-U",
+      table.concat(build_filetypes_args(filetypes), " "),
+      string.format(
+        "'%s'",
+        SPLIT_IMPORT_REGEX:format(utils.escape_import_path(head))
+      ),
+      ".",
+    }, " ")
+  else
+    return table.concat({
+      "--json",
+      table.concat(build_filetypes_args(filetypes), " "),
+      string.format("'%s[\\.\\s]'", utils.escape_import_path(import_path)),
+      ".",
+    }, " ")
+  end
+end
+
+---@param source_import_path string: The import path to replace
+---@param destination_import_path string: The import path to replace with
+---@param split boolean: Whether to look for split import or not (default: false)
+---@return string[]
+local make_sed_patterns = function(
+  source_import_path,
+  destination_import_path,
+  split
+)
+  if not split then
+    return {
+      string.format(
+        "'s/%s\\([\\. ]\\)/%s\\1/'",
+        utils.escape_import_path(source_import_path),
+        utils.escape_import_path(destination_import_path)
+      ),
+    }
+  end
+  local s_head, s_tail =
+    utils.split_import_on_last_separator(source_import_path)
+  local d_head, d_tail =
+    utils.split_import_on_last_separator(destination_import_path)
+  local sed_args_base = "'%s,%ss/"
+    .. utils.escape_import_path(s_head)
+    .. "/"
+    .. utils.escape_import_path(d_head)
+    .. "/'"
+  local sed_args_module = "'%s,%ss/"
+    .. utils.escape_import_path(s_tail)
+    .. "/"
+    .. utils.escape_import_path(d_tail)
+    .. "/'"
+  return { sed_args_base, sed_args_module }
+end
+
+---@class ReplaceJob
+---@field file_path string
+---@field sed_pattern string
+local ReplaceJob = {}
+
+---Creates a new ReplaceJob
+---@param source_import_path string: The import path to replace
+---@param destination_import_path string: The import path to replace with
+---@param split boolean: Whether to look for split import or not (default: false)
+ReplaceJob.new = function(
+  source_import_path,
+  destination_import_path,
+  split
+)
 end
 
 return M

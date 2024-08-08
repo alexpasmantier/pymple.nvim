@@ -32,10 +32,10 @@ for _, binary in ipairs(required_binaries) do
     )
   end
 
-  -- TODO: finish this
-  if installed and version then
-    print("Found " .. binary.name .. " version: " .. version)
-  end
+  --   -- TODO: finish this
+  --   if installed and version then
+  --     print("Found " .. binary.name .. " version: " .. version)
+  --   end
 end
 
 local required_plugins = {
