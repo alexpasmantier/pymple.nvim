@@ -66,7 +66,7 @@ function M.sed(pattern, file_path)
     command = "zsh",
     args = {
       "-c",
-      "sed -i '' " .. pattern,
+      "sed -i '' " .. pattern .. " " .. file_path,
     },
   }):start()
 end
@@ -217,6 +217,7 @@ local make_gg_args = function(import_path, filetypes, split)
       ".",
     }, " ")
   else
+    -- search for the full import path (possibly prefixing something else)
     return table.concat({
       "--json",
       table.concat(build_filetypes_args(filetypes), " "),
@@ -238,7 +239,7 @@ local make_sed_patterns = function(
   if not split then
     return {
       string.format(
-        "'s/%s\\([\\. ]\\)/%s\\1/'",
+        "s/%s\\([\\. ]\\)/%s\\1/",
         utils.escape_import_path(source_import_path),
         utils.escape_import_path(destination_import_path)
       ),
@@ -248,16 +249,16 @@ local make_sed_patterns = function(
     utils.split_import_on_last_separator(source_import_path)
   local d_head, d_tail =
     utils.split_import_on_last_separator(destination_import_path)
-  local sed_args_base = "'%s,%ss/"
+  local sed_args_base = "s/"
     .. utils.escape_import_path(s_head)
     .. "/"
     .. utils.escape_import_path(d_head)
-    .. "/'"
-  local sed_args_module = "'%s,%ss/"
+    .. "/"
+  local sed_args_module = "s/"
     .. utils.escape_import_path(s_tail)
     .. "/"
     .. utils.escape_import_path(d_tail)
-    .. "/'"
+    .. "/"
   return { sed_args_base, sed_args_module }
 end
 
@@ -266,15 +267,24 @@ end
 ---@field sed_pattern string
 local ReplaceJob = {}
 
+ReplaceJob.__index = ReplaceJob
+
 ---Creates a new ReplaceJob
----@param source_import_path string: The import path to replace
----@param destination_import_path string: The import path to replace with
----@param split boolean: Whether to look for split import or not (default: false)
-ReplaceJob.new = function(
-  source_import_path,
-  destination_import_path,
-  split
-)
+---@param file_path string: The path to the file to run the sed command on
+---@param sed_pattern string: The pattern to pass to sed
+function ReplaceJob.new(file_path, sed_pattern)
+  local self = setmetatable({}, ReplaceJob)
+  self.file_path = file_path
+  self.sed_pattern = sed_pattern
+  return self
+end
+
+function ReplaceJob()
+  M.sed(self.sed_pattern, self.file_path)
+end
+
+function ReplaceJob:run()
+  M.sed(self.sed_pattern, self.file_path)
 end
 
 return M
