@@ -6,10 +6,8 @@
 ---  - `add_import_for_symbol_under_cursor`: Resolves import for symbol under cursor.
 ---  - `update_imports`: Update all imports in workspace after renaming `source` to `destination`.
 ---@brief ]]
-local M = {}
 
 local resolve_imports = require("pymple.resolve_imports")
-local update_imports = require("pymple.update_imports")
 local config = require("pymple.config")
 local utils = require("pymple.utils")
 local print_err = utils.print_err
@@ -18,6 +16,12 @@ local TELESCOPE_WIDTH_PADDING = 5
 local TELESCOPE_HEIGHT_PADDING = 5
 local TELESCOPE_MIN_HEIGHT = 8
 local TELESCOPE_MAX_HEIGHT = 20
+local project = require("pymple.project")
+local udim = require("pymple.update_imports")
+local udim_utils = require("pymple.update_imports.utils")
+local udim_ui = require("pymple.update_imports.ui")
+
+local M = {}
 
 ---Resolves import for symbol under cursor.
 ---This will automatically find and add the corresponding import to the top of
@@ -100,7 +104,17 @@ M.update_imports = function(source, destination)
       .. " in filetypes: "
       .. vim.inspect(opts.filetypes)
   )
-  update_imports.update_imports(source, destination, opts.filetypes)
+  local r_jobs =
+    udim.prepare_jobs(source, destination, opts.filetypes, project.project_root)
+  if #r_jobs == 0 then
+    log.info("No jobs to run.")
+    return
+  end
+  local imports_count = udim_utils.count_imports_in_rjobs(r_jobs)
+  local files = udim_utils.get_files_from_rjobs(r_jobs)
+  local confirmation_dialog =
+    udim_ui.get_confirmation_dialog(imports_count, #files)
+  confirmation_dialog:mount()
 end
 
 return M

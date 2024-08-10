@@ -11,7 +11,6 @@
 --- - automatic and configurable creation of test files that mirror your project
 ---   structure
 ---@brief ]]
-local M = {}
 
 local config = require("pymple.config")
 local keymaps = require("pymple.keymaps")
@@ -20,6 +19,9 @@ local utils = require("pymple.utils")
 local print_err = utils.print_err
 local log = require("pymple.log")
 local hooks = require("pymple.hooks")
+local project = require("pymple.project")
+
+local M = {}
 
 --- Setup pymple.nvim with the provided configuration
 ---@param opts Config
@@ -42,6 +44,8 @@ local function setup(opts)
       "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
     )
   end
+
+  project:setup()
 
   if opts.create_user_commands.update_imports then
     vim.api.nvim_create_user_command("UpdatePythonImports", function(args)

@@ -115,11 +115,12 @@ local default_logging_options = {
   level = "debug",
 }
 
----@alias PythonOptions { virtual_env_names: string[] }
+---@alias PythonOptions { virtual_env_names: string[], root_markers: string[]}
 
 ---@type PythonOptions
 local default_python_options = {
   virtual_env_names = { ".venv" },
+  root_markers = { "pyproject.toml", "setup.py", ".git", "manage.py" },
 }
 
 ---@alias AddImportToBufOptions { autosave: boolean }

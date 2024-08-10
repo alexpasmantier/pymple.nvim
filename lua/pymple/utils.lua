@@ -3,6 +3,7 @@ M = {}
 local filetype = require("plenary.filetype")
 local cfg = require("pymple.config")
 local log = require("pymple.log")
+local Path = require("plenary.path")
 
 local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 
@@ -56,21 +57,35 @@ function M.check_plugin_installed(plugin_name)
   return lualib_installed(plugin_name)
 end
 
+---Find the root of a python project
+---@param starting_dir string | nil: The directory to start searching from
+---@return string | nil: The root of the python project
+local function find_project_root(starting_dir)
+  local dir = starting_dir or vim.fn.getcwd()
+  while dir ~= "/" do
+    for _, marker in ipairs(cfg.user_config.python.root_markers) do
+      if vim.fn.glob(dir .. "/" .. marker) ~= "" then
+        return dir
+      end
+    end
+    dir = vim.fn.fnamemodify(dir, ":h")
+  end
+  return nil
+end
+
+M.find_project_root = find_project_root
+
 ---Converts a path to an import path
 ---@param module_path string: The path to a python module
----@param python_root string: The root of the python project
 ---@return string: The import path for the module
-function M.to_import_path(module_path, python_root)
-  -- TODO: add logic to find python root
-  python_root = python_root or vim.fn.getcwd()
-  module_path = module_path:gsub(python_root, "")
+function M.to_import_path(module_path)
   local result, _ = module_path:gsub("/", "."):gsub("%.py$", "")
   return result
 end
 
 ---Splits an import path on the last separator
 ---@param import_path string: The import path to be split
----@return string | nil, string: The base path and the last part of the import path
+---@return string, string: The base path and the last part of the import path
 function M.split_import_on_last_separator(import_path)
   local base_path, module_name = import_path:match("(.-)%.?([^%.]+)$")
   return base_path, module_name
@@ -296,26 +311,49 @@ function M.deduplicate_list(list)
   return result
 end
 
----Make a list of files relative to current directory
----@param files string[]: The list of files
-function M.make_files_relative(files)
-  local result = {}
-  for _, file in ipairs(files) do
-    table.insert(result, vim.fn.fnamemodify(file, ":."))
-  end
-  return result
-end
-
 ---Map a function over a list
----@param func function: The function to map
----@param list any[]: The list to map over
----@return any[]: The mapped list
-function M.map(func, list)
+---@generic T
+---@generic U
+---@param func function(T): U: The function to map
+---@param list T[]: The list to map over
+---@param extra_args table: Extra arguments to pass to the function
+---@return U[]: The mapped list
+local map = function(func, list, extra_args)
   local mapped = {}
   for _, item in ipairs(list) do
-    table.insert(mapped, func(item))
+    if not extra_args then
+      table.insert(mapped, func(item))
+    else
+      table.insert(mapped, func(item, unpack(extra_args)))
+    end
   end
   return mapped
+end
+
+M.map = map
+
+---Make a file path relative to a root directory
+---@param file string: The file path
+---@param root string: The root directory
+---@return string: The relative file path
+local make_relative_to = function(file, root)
+  ---@type Path
+  local f = Path:new(file)
+  local r = Path:new(root)
+  local rel_f = f:make_relative(r:absolute())
+  return rel_f
+end
+
+M.make_relative_to = make_relative_to
+
+---Make a list of files relative to current directory
+---@param files string[]: The list of files
+---@param root string: The root directory
+---@return string[]: The list of relative file paths
+function M.make_files_relative(files, root)
+  return map(function(file)
+    return make_relative_to(file, root)
+  end, files)
 end
 
 return M

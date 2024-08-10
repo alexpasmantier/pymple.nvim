@@ -1,0 +1,11 @@
+{
+  "runtime": {
+        "version": "Lua 5.4",
+  },
+  "workspace": {
+    "library": [
+      "$VIMRUNTIME",
+      "$HOME/code/lua/plenary.nvim",
+    ]
+  }
+}

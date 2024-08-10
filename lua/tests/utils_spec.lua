@@ -5,7 +5,7 @@ local mock = require("luassert.mock")
 
 describe("to_import_path", function()
   it("std", function()
-    local result = utils.to_import_path("foo/bar/baz.py")
+    local result = utils.to_import_path("foo/bar/baz.py", cwd)
     assert.equals("foo.bar.baz", result)
   end)
 end)
@@ -141,7 +141,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/no_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf)
+    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[1])
@@ -158,7 +158,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/single_line_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf)
+    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[3])
@@ -175,7 +175,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/multiline_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf)
+    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[6])
@@ -187,7 +187,7 @@ describe("get_virtual_environment", function()
     mock(os, "getenv", function()
       return "/foo/bar"
     end)
-    local result = utils.get_virtual_environment()
+    local result = utils.get_virtual_environment(cwd)
     assert.equals("/foo/bar", result)
     mock.revert(os)
   end)
@@ -247,6 +247,13 @@ describe("deduplicate_list", function()
   end)
 end)
 
+describe("make_relative_to", function()
+  it("std", function()
+    local result = utils.make_relative_to("/foo/bar/baz", "/foo")
+    assert.equals("bar/baz", result)
+  end)
+end)
+
 describe("map", function()
   it("std", function()
     local result = utils.map(function(x)
@@ -260,5 +267,21 @@ describe("map", function()
       return x * 2
     end, {})
     assert.same({}, result)
+  end)
+
+  it("extra_args", function()
+    local fn = function(x, n, m)
+      return x + n + m
+    end
+    local result = utils.map(fn, { 1, 2, 3 }, { 10, 20 })
+    assert.same({ 31, 32, 33 }, result)
+  end)
+end)
+
+describe("make_files_relative", function()
+  it("std", function()
+    local result =
+      utils.make_files_relative({ "/foo/bar/baz", "/foo/bar" }, "/foo")
+    assert.same({ "bar/baz", "bar" }, result)
   end)
 end)
