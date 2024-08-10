@@ -149,19 +149,12 @@ Pymple's jobs module exposes functions that run jobs in the background. These
 will typically be used for tasks like searching for import candidates or
 updating imports in the workspace using `gg` and `sed`.
 
-Jobs                                                                    *Jobs*
-
-
-    Fields: ~
-        {global_sed} (fun)
-
-
 GGJsonMatch                                                      *GGJsonMatch*
 
 
     Fields: ~
-        {start} (number)
-        {end}   (number)
+        {m_start} (number)
+        {m_end}   (number)
 
 
 GGJsonSearchResult                                        *GGJsonSearchResult*
@@ -183,39 +176,17 @@ GGJsonResult                                                    *GGJsonResult*
         {results} (GGJsonSearchResult[])
 
 
-ReplaceJob                                                        *ReplaceJob*
-
-
-    Fields: ~
-        {file_path}   (string)
-        {sed_pattern} (string)
-
-
-M.global_sed({gg_job_results}, {sed_args})                    *M.global_sed()*
-    Runs a global sed command on the results of a gg job
-
-
-    Parameters: ~
-        {gg_job_results} (GGJsonResult[])  The results of the gg job
-        {sed_args}       (string)          The arguments to pass to sed
-
-
-M.sed({pattern}, {file_path})                                        *M.sed()*
+M.sed({pattern}, {file_path}, {range})                               *M.sed()*
     Runs a sed command
 
 
     Parameters: ~
-        {pattern}   (string)  The pattern to pass to sed
-        {file_path} (string)  The path to the file to run the sed command on
+        {pattern}   (string)    The pattern to pass to sed
+        {file_path} (string)    The path to the file to run the sed command on
+        {range}     (number[])  The range of lines to run the sed command on
 
-
-M.ranged_sed({gg_job_results}, {sed_args})                    *M.ranged_sed()*
-    Runs a ranged sed command on the results of a gg job
-
-
-    Parameters: ~
-        {gg_job_results} (GGJsonResult[])  The results of the gg job
-        {sed_args}       (string)          The arguments to pass to sed
+    Return: ~
+        Job: The job that was started
 
 
 M.gg({args})                                                          *M.gg()*
@@ -223,7 +194,7 @@ M.gg({args})                                                          *M.gg()*
 
 
     Parameters: ~
-        {args} (string[])  Arguments to pass to the `gg` command
+        {args} (string)  Arguments to pass to the `gg` command
 
     Return: ~
         GGJsonResult[]: The results of the gg job
