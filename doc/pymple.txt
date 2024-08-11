@@ -123,22 +123,28 @@ At the moment, the following functions are exposed:
  - `update_imports`: Update all imports in workspace after renaming `source` to
    `destination`.
 
-M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
+M.add_import_for_symbol_under_cursor({autosave}) *M.add_import_for_symbol_under_cursor()*
     Resolves import for symbol under cursor. This will automatically find and
     add the corresponding import to the top of the file (below any existing
     doctsring)
 
 
+    Parameters: ~
+        {autosave} (boolean)  Whether to autosave the buffer after adding the
+                              import
 
-M.update_imports({source}, {destination})                 *M.update_imports()*
+
+M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
     Update all imports in workspace after renaming `source` to `destination`
 
 
     Parameters: ~
-        {source}      (string)  The path to the source file/dir (before
-                                renaming/moving)
-        {destination} (string)  The path to the destination file/dir (after
-                                renaming/moving)
+        {source}      (string)                The path to the source file/dir
+                                              (before renaming/moving)
+        {destination} (string)                The path to the destination
+                                              file/dir (after renaming/moving)
+        {opts}        (UpdateImportsOptions)  Options for the update imports
+                                              operation
 
 
 
