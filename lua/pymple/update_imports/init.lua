@@ -2,6 +2,7 @@ local utils = require("pymple.utils")
 local log = require("pymple.log")
 local update_imports_jobs = require("pymple.update_imports.jobs")
 local jobs = require("pymple.jobs")
+local async = require("plenary.async")
 
 local M = {}
 
@@ -50,11 +51,6 @@ M.make_monolithic_imports_job = make_monolithic_imports_job
 ---@param python_root string: The root of the python project
 ---@return ReplaceJob[]
 function M.prepare_jobs(source, destination, filetypes, python_root)
-  P(python_root)
-  local relative_files =
-    utils.make_files_relative({ source, destination }, python_root)
-  P(relative_files)
-
   local s, d = unpack(
     utils.map(
       utils.to_import_path,
@@ -104,6 +100,14 @@ function M.dry_run_jobs(r_jobs)
     end
   end
   return results
+end
+
+function M.async_dry_run_jobs(r_jobs, channel)
+  for _, j in ipairs(r_jobs) do
+    async.run(function()
+      j:async_run_on_lines(channel)
+    end)
+  end
 end
 
 return M

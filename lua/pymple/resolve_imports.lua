@@ -1,7 +1,6 @@
 local M = {}
 
 local utils = require("pymple.utils")
-local config = require("pymple.config")
 local jobs = require("pymple.jobs")
 local Path = require("plenary.path")
 local print_err = require("pymple.utils").print_err

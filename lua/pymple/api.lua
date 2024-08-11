@@ -8,7 +8,6 @@
 ---@brief ]]
 
 local resolve_imports = require("pymple.resolve_imports")
-local config = require("pymple.config")
 local utils = require("pymple.utils")
 local print_err = utils.print_err
 local log = require("pymple.log")
@@ -20,14 +19,15 @@ local project = require("pymple.project")
 local udim = require("pymple.update_imports")
 local udim_utils = require("pymple.update_imports.utils")
 local udim_ui = require("pymple.update_imports.ui")
+local async = require("plenary.async")
 
 local M = {}
 
 ---Resolves import for symbol under cursor.
 ---This will automatically find and add the corresponding import to the top of
 ---the file (below any existing doctsring)
-M.add_import_for_symbol_under_cursor = function()
-  local autosave = config.user_config.add_import_to_buf.autosave
+---@param autosave boolean: Whether to autosave the buffer after adding the import
+M.add_import_for_symbol_under_cursor = function(autosave)
   local symbol = vim.fn.expand("<cword>")
   if symbol == "" then
     print_err("No symbol found under cursor.")
@@ -94,8 +94,8 @@ end
 ---Update all imports in workspace after renaming `source` to `destination`
 ---@param source string: The path to the source file/dir (before renaming/moving)
 ---@param destination string: The path to the destination file/dir (after renaming/moving)
-M.update_imports = function(source, destination)
-  local opts = config.user_config.update_imports
+---@param opts UpdateImportsOptions: Options for the update imports operation
+M.update_imports = function(source, destination, opts)
   log.debug(
     "Updating imports from "
       .. source
@@ -112,8 +112,28 @@ M.update_imports = function(source, destination)
   end
   local imports_count = udim_utils.count_imports_in_rjobs(r_jobs)
   local files = udim_utils.get_files_from_rjobs(r_jobs)
-  local confirmation_dialog =
-    udim_ui.get_confirmation_dialog(imports_count, #files)
+  local confirmation_dialog = udim_ui.get_confirmation_dialog(
+    imports_count,
+    #files,
+    function(item)
+      if item.text == "Yes" then
+        udim.run_jobs(r_jobs)
+      elseif item.text == "Preview changes" then
+        local sender, receiver = async.control.channel.mpsc()
+        local preview_window =
+          udim_ui.get_preview_window(r_jobs, imports_count, #files)
+        preview_window:mount()
+        udim.async_dry_run_jobs(r_jobs, sender)
+        async.run(function()
+          preview_window:render_preview(receiver)
+        end)
+        -- vim.api.nvim_buf_set_option(preview_window.bufnr, "modifiable", false)
+      end
+    end,
+    function()
+      log.debug("Confirmation dialog closed.")
+    end
+  )
   confirmation_dialog:mount()
 end
 

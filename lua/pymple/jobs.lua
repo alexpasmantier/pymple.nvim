@@ -8,8 +8,10 @@
 M = {}
 
 local Job = require("plenary.job")
+local async = require("plenary.async")
 local utils = require("pymple.utils")
 local log = require("pymple.log")
+local fs = require("pymple.fs")
 
 ---@class GGJsonMatch
 ---@field m_start number
@@ -40,8 +42,36 @@ function M.sed(pattern, file_path, range)
     file_path
   )
   local job = Job:new({ command = "zsh", args = { "-c", sed_command } })
+
+  log.debug(
+    "Open file descriptors: "
+      .. fs.get_open_file_descriptors()
+      .. "/"
+      .. fs.max_open_file_descriptors
+  )
+  -- while fs.get_open_file_descriptors() >= fs.max_open_file_descriptors do
+  --   -- if we're close to the limit, wait a bit
+  --   vim.wait(100)
+  -- end
   job:start()
   return job
+end
+
+function M.multi_sed(patterns, file_path, range)
+  local ranged_patterns = {}
+  for _, pattern in ipairs(patterns) do
+    table.insert(
+      ranged_patterns,
+      string.format("%s,%s" .. pattern, range[1], range[2])
+    )
+  end
+  local sed_command = string.format(
+    "sed -i '' '%s' %s",
+    table.concat(ranged_patterns, "; "),
+    file_path
+  )
+  local job = Job:new({ command = "zsh", args = { "-c", sed_command } })
+  job:sync()
 end
 
 --- Runs a gg job and returns the results

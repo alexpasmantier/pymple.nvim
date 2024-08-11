@@ -1,7 +1,6 @@
 M = {}
 
 local filetype = require("plenary.filetype")
-local cfg = require("pymple.config")
 local log = require("pymple.log")
 local Path = require("plenary.path")
 
@@ -60,10 +59,10 @@ end
 ---Find the root of a python project
 ---@param starting_dir string | nil: The directory to start searching from
 ---@return string | nil: The root of the python project
-local function find_project_root(starting_dir)
+local function find_project_root(starting_dir, root_markers)
   local dir = starting_dir or vim.fn.getcwd()
   while dir ~= "/" do
-    for _, marker in ipairs(cfg.user_config.python.root_markers) do
+    for _, marker in ipairs(root_markers) do
       if vim.fn.glob(dir .. "/" .. marker) ~= "" then
         return dir
       end
@@ -183,9 +182,10 @@ function M.add_import_to_buffer(import_path, symbol, buf, autosave)
 end
 
 ---@param path string: The path in which to search for a virtual environment
+---@param venv_names string[]: The names of the virtual environment directories
 ---@return string | nil: The path to the virtual environment, or nil if it doesn't exist
-local function dir_contains_virtualenv(path)
-  for _, venv_name in ipairs(cfg.user_config.python.virtual_env_names) do
+local function dir_contains_virtualenv(path, venv_names)
+  for _, venv_name in ipairs(venv_names) do
     local venv_path = path .. "/" .. venv_name
     if vim.fn.isdirectory(venv_path) == 1 then
       return venv_path
@@ -196,15 +196,16 @@ end
 
 ---Get the path to the current virtual environment, or nil if we can't find one
 ---@param from_path string: The path to start searching from
+---@param venv_names string[]: The names of the virtual environment directories
 ---@return string | nil: The path to the current virtual environment
-function M.get_virtual_environment(from_path)
+function M.get_virtual_environment(from_path, venv_names)
   local venv = os.getenv("VIRTUAL_ENV")
   if venv then
     return venv
   end
   local current_path = from_path
   while current_path ~= vim.fn.expand("~") do
-    local venv_path = dir_contains_virtualenv(current_path)
+    local venv_path = dir_contains_virtualenv(current_path, venv_names)
     if venv_path then
       return venv_path
     end
@@ -253,7 +254,7 @@ M.print_msg = print_msg
 ---Print an error message to the console
 ---@param err_msg string: The error message to print
 function M.print_err(err_msg)
-  print_msg(err_msg, cfg.HL_GROUPS.Error)
+  print_msg(err_msg, "ErrorMsg")
   if log.error then
     log.error(err_msg)
   end
@@ -262,7 +263,7 @@ end
 ---Print an info message to the console
 ---@param info_msg string: The info message to print
 function M.print_info(info_msg)
-  print_msg(info_msg, cfg.HL_GROUPS.More)
+  print_msg(info_msg, "InfoMsg")
   log.info(info_msg)
 end
 
@@ -354,6 +355,21 @@ function M.make_files_relative(files, root)
   return map(function(file)
     return make_relative_to(file, root)
   end, files)
+end
+
+---Split a string on a separator
+---@param inputstr string: The string to split
+---@param sep string: The separator to split on
+---@return string[]: The list of strings
+function M.split_string(inputstr, sep)
+  if sep == nil then
+    sep = "%s"
+  end
+  local t = {}
+  for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
+    table.insert(t, str)
+  end
+  return t
 end
 
 return M

@@ -1,5 +1,7 @@
 local jobs = require("pymple.jobs")
 local utils = require("pymple.utils")
+local Job = require("plenary.job")
+local async = require("plenary.async")
 
 local M = {}
 
@@ -120,20 +122,19 @@ function ReplaceJob:add_pattern(pattern)
 end
 
 ---Runs the ReplaceJob on the target files
----@return Job[]
 function ReplaceJob:run_on_files()
-  local futures = {}
-  for _, pattern in ipairs(self.sed_patterns) do
-    for _, t in ipairs(self.targets) do
-      for _, sr in ipairs(t.results) do
-        table.insert(
-          futures,
-          jobs.sed(pattern, t.path, { sr.line_start, sr.line_end + 1 })
+  -- local futures = {}
+  for _, t in ipairs(self.targets) do
+    for _, sr in ipairs(t.results) do
+      async.run(function()
+        jobs.multi_sed(
+          self.sed_patterns,
+          t.path,
+          { sr.line_start, sr.line_end + 1 }
         )
-      end
+      end)
     end
   end
-  return futures
 end
 
 ---@class ReplaceJobResult
@@ -165,6 +166,28 @@ function ReplaceJob:run_on_lines()
     end
   end
   return results
+end
+
+function ReplaceJob:async_run_on_lines(channel)
+  for _, t in ipairs(self.targets) do
+    for _, sr in ipairs(t.results) do
+      local line_before = sr.line
+      local line_after = line_before
+      for _, pattern in ipairs(self.sed_patterns) do
+        local handle = assert(
+          io.popen("echo '" .. line_after .. "' | sed '" .. pattern .. "'")
+        )
+        -- sed adds a newline at the end of the line
+        line_after = assert(handle:read("*a")):gsub("\n$", "")
+        handle:close()
+      end
+      channel.send({
+        file_path = t.path,
+        line_before = line_before,
+        line_after = line_after,
+      })
+    end
+  end
 end
 
 M.ReplaceJob = ReplaceJob

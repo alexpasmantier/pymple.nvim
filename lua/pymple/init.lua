@@ -28,28 +28,35 @@ local M = {}
 local function setup(opts)
   opts = opts or {}
 
-  setmetatable(opts, { __index = config.default_config })
-  config.set_user_config(opts)
+  local user_config = config.set_user_config(opts)
 
-  if opts.logging.enabled then
-    opts.logging.enabled = nil
-    log.new(opts.logging, true)
-    log.debug("Logging enabled")
+  -- P(user_config)
+  if user_config.logging.enabled then
+    log.new(user_config.logging, true)
+    log.info("--------------------------------------------------------------")
+    log.info("---                   NEW PYMPLE SESSION                   ---")
+    log.info("--------------------------------------------------------------")
   else
     log.new(log.off_config, true)
   end
 
-  if not utils.table_contains(opts.update_imports.filetypes, "python") then
+  if
+    not utils.table_contains(user_config.update_imports.filetypes, "python")
+  then
     print_err(
       "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
     )
   end
 
-  project:setup()
+  project:setup(user_config)
 
-  if opts.create_user_commands.update_imports then
+  if user_config.create_user_commands.update_imports then
     vim.api.nvim_create_user_command("UpdatePythonImports", function(args)
-      api.update_imports(args.fargs[1], args.fargs[2])
+      api.update_imports(
+        args.fargs[1],
+        args.fargs[2],
+        user_config.update_imports
+      )
     end, {
       desc = [[Update all imports in workspace after renaming `source` to
       `destination`]],
@@ -58,11 +65,13 @@ local function setup(opts)
     log.debug("Created UpdatePythonImports user command")
   end
 
-  if opts.create_user_commands.add_import_for_symbol_under_cursor then
+  if user_config.create_user_commands.add_import_for_symbol_under_cursor then
     vim.api.nvim_create_user_command(
       "PympleAddImportForSymbolUnderCursor",
       function(_)
-        require("pymple.api").add_import_for_symbol_under_cursor()
+        require("pymple.api").add_import_for_symbol_under_cursor(
+          user_config.add_import_to_buf.autosave
+        )
       end,
       {
         desc = [[Resolves import for symbol under cursor. This will
@@ -73,7 +82,7 @@ local function setup(opts)
     log.debug("Created PympleAddImportForSymbolUnderCursor user command")
   end
 
-  keymaps.setup_keymaps(opts.keymaps)
+  keymaps.setup_keymaps(user_config.keymaps)
   log.debug("Set up keymaps")
 
   hooks.setup()
@@ -82,7 +91,6 @@ end
 --- Setup pymple.nvim with the provided configuration
 ---@param opts Config
 function M.setup(opts)
-  opts = opts or config.default_config
   setup(opts)
   log.debug("Pymple setup complete")
 end

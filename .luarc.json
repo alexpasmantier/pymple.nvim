@@ -6,6 +6,7 @@
     "library": [
       "$VIMRUNTIME",
       "$HOME/code/lua/plenary.nvim",
+      "$HOME/code/lua/nui.nvim",
     ]
   }
 }

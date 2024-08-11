@@ -109,10 +109,16 @@ local default_update_imports_options = {
 
 ---@type LoggingOptions
 local default_logging_options = {
-  enabled = false,
-  use_file = false,
-  use_console = false,
-  level = "debug",
+  enabled = true,
+  file = {
+    enabled = true,
+    path = vim.fn.stdpath("data") .. "/pymple.vlog",
+    max_lines = 1000,
+  },
+  console = {
+    enabled = false,
+  },
+  level = "info",
 }
 
 ---@alias PythonOptions { virtual_env_names: string[], root_markers: string[]}
@@ -153,9 +159,8 @@ M.default_config = default_config
 
 ---@param opts Config
 function M.set_user_config(opts)
-  M.user_config = vim.tbl_deep_extend("force", default_config, opts)
+  local user_config = vim.tbl_deep_extend("force", default_config, opts)
+  return user_config
 end
-
-M.set_user_config(M.default_config)
 
 return M

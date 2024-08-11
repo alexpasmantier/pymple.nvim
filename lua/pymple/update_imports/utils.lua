@@ -53,4 +53,22 @@ end
 
 M.get_files_from_rjobs = get_files_from_rjobs
 
+local function truncate_line(line, max_length)
+  if #line > max_length then
+    return string.sub(line, 1, max_length)
+  else
+    return line
+  end
+end
+
+local function truncate_lines(lines, max_length)
+  local truncated_lines = {}
+  for _, line in ipairs(lines) do
+    table.insert(truncated_lines, truncate_line(line, max_length))
+  end
+  return truncated_lines
+end
+
+M.truncate_lines = truncate_lines
+
 return M
