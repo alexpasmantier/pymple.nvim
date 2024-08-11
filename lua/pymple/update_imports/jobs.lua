@@ -192,4 +192,20 @@ end
 
 M.ReplaceJob = ReplaceJob
 
+function M.filter_rjob_targets(r_job, ignored_paths)
+  if #ignored_paths == 0 then
+    return r_job
+  end
+  for i = #r_job.targets, 1, -1 do
+    local target = r_job.targets[i]
+    for _, ignored_path in ipairs(ignored_paths) do
+      if target.path == ignored_path then
+        table.remove(r_job.targets, i)
+        break
+      end
+    end
+  end
+  return r_job
+end
+
 return M

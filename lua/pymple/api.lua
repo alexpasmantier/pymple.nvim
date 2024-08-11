@@ -127,7 +127,7 @@ M.update_imports = function(source, destination, opts)
         async.run(function()
           preview_window:render_preview(receiver)
         end)
-        -- vim.api.nvim_buf_set_option(preview_window.bufnr, "modifiable", false)
+        vim.api.nvim_buf_set_option(preview_window.bufnr, "modifiable", false)
       end
     end,
     function()
