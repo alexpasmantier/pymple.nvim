@@ -354,8 +354,21 @@ M.make_relative_to = make_relative_to
 function M.make_files_relative(files, root)
   return map(function(file)
     return make_relative_to(file, root)
-  end, files)
+  end, files, {})
 end
+
+local function make_path_absolute(path)
+  if path:sub(1, 1) == "/" then
+    return path
+  end
+  return vim.fn.fnamemodify(path, ":p")
+end
+
+local function make_paths_absolute(paths)
+  return map(make_path_absolute, paths, {})
+end
+
+M.make_paths_absolute = make_paths_absolute
 
 ---Split a string on a separator
 ---@param inputstr string: The string to split

@@ -421,14 +421,16 @@ function M.get_preview_window(r_jobs, num_results, num_files)
   end, { noremap = true })
 
   local _ = preview_window:map("n", "<CR>", function(bufnr)
-    preview_window:unmount()
     local ignored_paths = {}
     for file_path, _ in pairs(preview_window.ignored_paths) do
       table.insert(ignored_paths, file_path)
     end
+    preview_window:unmount()
     local filtered_jobs = {}
+    log.debug(r_jobs)
     for _, rj in ipairs(r_jobs) do
-      local filtered_job = udim_jobs.filter_rjob_targets(rj, {})
+      local filtered_job = udim_jobs.filter_rjob_targets(rj, ignored_paths)
+      log.debug(filtered_job)
       if #filtered_job.targets > 0 then
         table.insert(filtered_jobs, filtered_job)
       end

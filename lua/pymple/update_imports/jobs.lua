@@ -195,6 +195,8 @@ M.ReplaceJob = ReplaceJob
 function M.filter_rjob_targets(r_job, ignored_paths)
   if #ignored_paths == 0 then
     return r_job
+  else
+    ignored_paths = utils.make_paths_absolute(ignored_paths)
   end
   for i = #r_job.targets, 1, -1 do
     local target = r_job.targets[i]

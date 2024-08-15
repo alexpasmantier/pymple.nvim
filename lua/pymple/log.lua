@@ -30,7 +30,6 @@ local unpack = unpack or table.unpack
 local function maybe_trim_logfile(logfile, max_lines)
   -- check if the logfile exists
   if vim.fn.filereadable(logfile) == 0 then
-    P("Logfile does not exist")
     return
   end
   local handle = assert(io.popen("wc -l " .. logfile))
