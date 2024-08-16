@@ -70,6 +70,7 @@ function M.multi_sed(patterns, file_path, range)
     table.concat(ranged_patterns, "; "),
     file_path
   )
+  log.debug("Running sed command: " .. sed_command)
   local job = Job:new({ command = "zsh", args = { "-c", sed_command } })
   job:sync()
 end
@@ -78,7 +79,7 @@ end
 ---@param args string: Arguments to pass to the `gg` command
 ---@return GGJsonResult[]: The results of the gg job
 function M.gg(args)
-  local subcommand = "gg -C " .. args
+  local subcommand = "gg -C -M 2000 " .. args
   log.debug("Starting gg job: " .. subcommand)
   local job = Job:new({
     command = utils.SHELL,

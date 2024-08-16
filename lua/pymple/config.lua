@@ -68,9 +68,16 @@
 --- ```
 --- </pre>
 ---@brief ]]
+
+local utils = require("pymple.utils")
+
 M = {}
 
----@alias HlGroups { Error: string, Warning: string, More: string, Mode: string }
+---@class HlGroups
+---@field Error string
+---@field Warning string
+---@field More string
+---@field Mode string
 
 ---@type HlGroups
 M.HL_GROUPS = {
@@ -80,7 +87,8 @@ M.HL_GROUPS = {
   Mode = "ModeMsg",
 }
 
----@alias Keymaps { resolve_import_under_cursor: {keys: string, desc: string} }
+---@class Keymaps
+---@field add_import_for_symbol_under_cursor {keys: string, desc: string}
 
 ---@type Keymaps
 local default_keymaps = {
@@ -90,26 +98,21 @@ local default_keymaps = {
   },
 }
 
----@alias UserCommandOptions {update_imports: boolean, add_import_for_symbol_under_cursor: boolean}
-
----@type UserCommandOptions
-local default_user_command_options = {
-  update_imports = true,
-  add_import_for_symbol_under_cursor = true,
-}
-
----@alias UpdateImportsOptions { filetypes: string[]}
+---@class UpdateImportsOptions
+---@field filetypes string[]
 
 ---@type UpdateImportsOptions
 local default_update_imports_options = {
   filetypes = { "python", "markdown" },
 }
 
----@alias LoggingOptions { enabled: boolean, use_file: boolean, use_console: boolean, level: "trace" | "debug" | "info" | "warn" | "error" | "fatal" }
+---@class LoggingOptions
+---@field file {enabled: boolean, path: string, max_lines: number}
+---@field console {enabled: boolean}
+---@field level "trace"|"debug"|"info"|"warn"|"error"|"fatal"
 
 ---@type LoggingOptions
 local default_logging_options = {
-  enabled = true,
   file = {
     enabled = true,
     path = vim.fn.stdpath("data") .. "/pymple.vlog",
@@ -121,7 +124,9 @@ local default_logging_options = {
   level = "info",
 }
 
----@alias PythonOptions { virtual_env_names: string[], root_markers: string[]}
+---@class PythonOptions
+---@field virtual_env_names string[]
+---@field root_markers string[]
 
 ---@type PythonOptions
 local default_python_options = {
@@ -129,7 +134,8 @@ local default_python_options = {
   root_markers = { "pyproject.toml", "setup.py", ".git", "manage.py" },
 }
 
----@alias AddImportToBufOptions { autosave: boolean }
+---@class AddImportToBufOptions
+---@field autosave boolean
 
 ---@type AddImportToBufOptions
 local default_add_import_to_buf_options = {
@@ -138,7 +144,6 @@ local default_add_import_to_buf_options = {
 
 ---@class Config
 ---@field keymaps Keymaps
----@field create_user_commands UserCommandOptions
 ---@field update_imports UpdateImportsOptions
 ---@field logging LoggingOptions
 ---@field python PythonOptions
@@ -147,7 +152,6 @@ local default_add_import_to_buf_options = {
 ---@type Config
 local default_config = {
   keymaps = default_keymaps,
-  create_user_commands = default_user_command_options,
   update_imports = default_update_imports_options,
   add_import_to_buf = default_add_import_to_buf_options,
   logging = default_logging_options,
@@ -161,6 +165,18 @@ M.default_config = default_config
 function M.set_user_config(opts)
   local user_config = vim.tbl_deep_extend("force", default_config, opts)
   return user_config
+end
+
+---@param opts Config
+---@return boolean
+function M.validate_configuration(opts)
+  if not vim.tbl_contains(opts.update_imports.filetypes, "python") then
+    utils.print_err(
+      "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
+    )
+    return false
+  end
+  return true
 end
 
 return M

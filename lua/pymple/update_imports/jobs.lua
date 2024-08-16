@@ -1,7 +1,7 @@
 local jobs = require("pymple.jobs")
 local utils = require("pymple.utils")
-local Job = require("plenary.job")
 local async = require("plenary.async")
+local log = require("pymple.log")
 
 local M = {}
 
@@ -46,7 +46,7 @@ local make_gg_args = function(import_path, filetypes, split)
     return table.concat({
       "--json",
       table.concat(build_filetypes_args(filetypes), " "),
-      string.format("'%s\\b'", utils.escape_import_path(import_path)),
+      string.format("'[^\\.]\\b%s\\b'", utils.escape_import_path(import_path)),
       ".",
     }, " ")
   end
@@ -141,6 +141,7 @@ end
 ---@field file_path string
 ---@field line_before string
 ---@field line_after string
+---@field line_num number
 
 ---Runs the ReplaceJob on individual lines and returns the modified lines
 ---@return ReplaceJobResult[]
@@ -162,6 +163,7 @@ function ReplaceJob:run_on_lines()
         file_path = t.path,
         line_before = line_before,
         line_after = line_after,
+        line_num = sr.line_number,
       })
     end
   end
@@ -185,6 +187,7 @@ function ReplaceJob:async_run_on_lines(channel)
         file_path = t.path,
         line_before = line_before,
         line_after = line_after,
+        line_num = sr.line_number,
       })
     end
   end
@@ -192,22 +195,63 @@ end
 
 M.ReplaceJob = ReplaceJob
 
-function M.filter_rjob_targets(r_job, ignored_paths)
-  if #ignored_paths == 0 then
-    return r_job
-  else
-    ignored_paths = utils.make_paths_absolute(ignored_paths)
-  end
-  for i = #r_job.targets, 1, -1 do
-    local target = r_job.targets[i]
-    for _, ignored_path in ipairs(ignored_paths) do
-      if target.path == ignored_path then
-        table.remove(r_job.targets, i)
-        break
-      end
+---@param path string
+---@param ignored_paths {string: number[]}
+local function is_path_ignored(path, ignored_paths)
+  for p, _ in pairs(ignored_paths) do
+    log.debug(p)
+    if path == p then
+      return true
     end
   end
-  return r_job
+  return false
+end
+
+-- paths are of the form `path/to/file.py:line_number:`
+---@param r_job ReplaceJob
+---@param ignored_keys string[]
+function M.filter_rjob_targets(r_job, ignored_keys)
+  if #ignored_keys == 0 then
+    return r_job
+  end
+  -- build up a hashmap of paths to line numbers
+  local ignored_paths = {}
+  for _, k in ipairs(ignored_keys) do
+    local p, ln = unpack(vim.split(k, ":"))
+    p = vim.fn.fnamemodify(p, ":p")
+    if ignored_paths[p] == nil then
+      ignored_paths[p] = {}
+    end
+    table.insert(ignored_paths[p], tonumber(ln))
+  end
+
+  local modified_targets = {}
+  for _, target in ipairs(r_job.targets) do
+    -- if the target's path is in the ignored paths
+    if is_path_ignored(target.path, ignored_paths) then
+      local new_target = { path = target.path, results = {} }
+      -- only add lines if they are not ignored
+      for _, result in ipairs(target.results) do
+        if
+          utils.all(utils.map(function(ln)
+            return result.line_number ~= ln
+          end, ignored_paths[target.path], {}))
+        then
+          table.insert(new_target.results, result)
+        end
+      end
+      if #new_target.results > 0 then
+        table.insert(modified_targets, new_target)
+      end
+    -- otherwise just add the target as-is
+    else
+      table.insert(modified_targets, target)
+    end
+  end
+  local new_job = ReplaceJob.new(r_job.sed_patterns, modified_targets)
+  log.debug(r_job)
+  log.debug(new_job)
+  return new_job
 end
 
 return M

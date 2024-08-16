@@ -325,7 +325,7 @@ local map = function(func, list, extra_args)
     if not extra_args then
       table.insert(mapped, func(item))
     else
-      table.insert(mapped, func(item, unpack(extra_args)))
+      mapped[#mapped + 1] = func(item, unpack(extra_args))
     end
   end
   return mapped
@@ -383,6 +383,30 @@ function M.split_string(inputstr, sep)
     table.insert(t, str)
   end
   return t
+end
+
+---@generic T
+---@param collection T[]: A collection of booleans
+---@return boolean
+function M.any(collection)
+  for _, v in ipairs(collection) do
+    if v then
+      return true
+    end
+  end
+  return false
+end
+
+---@generic T
+---@param collection T[]: A collection of booleans
+---@return boolean
+function M.all(collection)
+  for _, v in ipairs(collection) do
+    if not v then
+      return false
+    end
+  end
+  return true
 end
 
 return M

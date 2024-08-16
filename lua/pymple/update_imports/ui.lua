@@ -29,7 +29,7 @@ function M.get_confirmation_dialog(
       style = "rounded",
       text = {
         top = string.format(
-          "Update %s imports in %s files?",
+          "[pymple.nvim] Update %s imports in %s files?",
           number_of_imports,
           number_of_files
         ),
@@ -73,14 +73,14 @@ local preview_hl_groups = {
     preview_window_ns,
     "PymplePreviewFileHeader",
     {
-      link = "@keyword.function",
+      link = "@text.title",
     }
   ),
   line_count = vim.api.nvim_set_hl(
     preview_window_ns,
     "PymplePreviewLineCount",
     {
-      link = "@type",
+      link = "DiagnosticError",
     }
   ),
   lines_before = vim.api.nvim_set_hl(
@@ -105,7 +105,7 @@ local preview_hl_groups = {
     }
   ),
   ignored = vim.api.nvim_set_hl(preview_window_ns, "PymplePreviewIgnored", {
-    link = "Comment",
+    fg = "#666666",
   }),
 }
 
@@ -258,10 +258,23 @@ function PreviewWindow:add_result_highlights(
   )
 end
 
-function PreviewWindow:render_filepath(file_path, line_count, icon, res_number)
-  local file_count = res_number .. "/" .. self.num_files
+local function make_file_path_key(file_path, line_number)
+  return file_path .. string.format(":%s:", line_number)
+end
+
+function PreviewWindow:render_filepath(
+  file_path,
+  line_count,
+  icon,
+  res_number,
+  res_line_num
+)
+  local res_count = res_number .. "/" .. self.num_results
   vim.api.nvim_buf_set_lines(self.bufnr, line_count, -1, false, {
-    file_count .. " " .. icon .. " " .. file_path,
+    res_count .. " " .. icon .. " " .. make_file_path_key(
+      file_path,
+      res_line_num
+    ),
   })
   vim.api.nvim_buf_set_lines(self.bufnr, line_count + 1, -1, false, {
     SEPARATORS.above
@@ -290,7 +303,13 @@ function PreviewWindow:render_result(result, line_count, res_num)
   local line_start = line_count
   local icon, icon_hl =
     icons.get_icon(result.file_path, vim.fn.fnamemodify(result.file_path, ":e"))
-  line_count = self:render_filepath(result.file_path, line_count, icon, res_num)
+  line_count = self:render_filepath(
+    result.file_path,
+    line_count,
+    icon,
+    res_num,
+    result.line_num
+  )
   line_count = self:render_lines(result.lines_before, line_count)
   line_count = self:render_lines(result.lines_after, line_count)
   line_count = self:render_bottom_separator(line_count)
@@ -303,18 +322,22 @@ function PreviewWindow:render_result(result, line_count, res_num)
     { "" }
   )
   local line_end = line_count + 1
-  self.results_map[result.file_path] = {
+  local result_data = {
+    file_path = result.file_path,
     line_start = line_start,
     line_end = line_end,
     icon_hl = icon_hl,
-    file_count_len = #(res_num .. self.num_files),
+    file_count_len = #(res_num .. self.num_results),
     icon_len = #icon,
     num_lines = #result.lines_before,
+    result_num = res_num,
+    result_line_num = result.line_num,
   }
+  self.results_map[res_num] = result_data
   self:add_result_highlights(
     icon_hl,
     line_start,
-    #(res_num .. self.num_files),
+    #(res_num .. self.num_results),
     #icon,
     #result.lines_before
   )
@@ -356,15 +379,22 @@ function PreviewWindow:render_preview(r_channel)
         self.size.width,
         SEPARATORS.diff_prefix
       ),
+      line_num = rj_result.line_num,
     }
     self:render_result(result, line_count, res_num)
-    local new_line_count = line_count
-      + #result.lines_before
-      + #result.lines_after
-      + 4
+    line_count = line_count + #result.lines_before + #result.lines_after + 4
     res_num = res_num + 1
-    line_count = new_line_count
   end
+end
+
+function PreviewWindow:resolve_hover()
+  local line = vim.api.nvim_win_get_cursor(0)[1]
+  for i, data in ipairs(self.results_map) do
+    if data.line_start <= line and line <= data.line_end then
+      return i, data
+    end
+  end
+  return nil
 end
 
 local MAX_PREVIEW_HEIGHT = 50
@@ -372,7 +402,7 @@ local MAX_PREVIEW_HEIGHT = 50
 function M.get_preview_window(r_jobs, num_results, num_files)
   -- maybe inject these
   local height = math.min(5 * num_results + 2, MAX_PREVIEW_HEIGHT)
-  local width = 140
+  local width = 120
   local preview_window = PreviewWindow({
     enter = true,
     focusable = true,
@@ -390,8 +420,8 @@ function M.get_preview_window(r_jobs, num_results, num_files)
           num_results,
           num_files
         ),
-        top_align = "center",
-        bottom = "[Enter]: Apply changes / [q]: Cancel",
+        top_align = "right",
+        bottom = "[C-j/k]: Next/Previous result / [Enter]: Apply changes / [i]: Toggle ignore result / [q]: Cancel",
       },
       padding = {
         top = 1,
@@ -404,7 +434,7 @@ function M.get_preview_window(r_jobs, num_results, num_files)
       modifiable = true,
     },
   })
-  preview_window.num_files = num_files
+  preview_window.num_results = num_results
   preview_window.size = {
     width = width,
     height = height,
@@ -421,16 +451,16 @@ function M.get_preview_window(r_jobs, num_results, num_files)
   end, { noremap = true })
 
   local _ = preview_window:map("n", "<CR>", function(bufnr)
-    local ignored_paths = {}
-    for file_path, _ in pairs(preview_window.ignored_paths) do
-      table.insert(ignored_paths, file_path)
+    local ignored_keys = {}
+    for res_key, _ in pairs(preview_window.ignored_paths) do
+      table.insert(ignored_keys, res_key)
     end
     preview_window:unmount()
     local filtered_jobs = {}
-    log.debug(r_jobs)
     for _, rj in ipairs(r_jobs) do
-      local filtered_job = udim_jobs.filter_rjob_targets(rj, ignored_paths)
-      log.debug(filtered_job)
+      log.debug("initial job: " .. #rj.targets .. " targets")
+      local filtered_job = udim_jobs.filter_rjob_targets(rj, ignored_keys)
+      log.debug("Filtered job: " .. #filtered_job.targets .. " targets")
       if #filtered_job.targets > 0 then
         table.insert(filtered_jobs, filtered_job)
       end
@@ -438,39 +468,57 @@ function M.get_preview_window(r_jobs, num_results, num_files)
     udim.run_jobs(filtered_jobs)
   end, { noremap = true })
 
-  local _ = preview_window:map("n", "i", function(bufnr)
-    local line = vim.api.nvim_win_get_cursor(0)[1]
-    for file_path, data in pairs(preview_window.results_map) do
-      if data.line_start <= line and line <= data.line_end then
-        if preview_window.ignored_paths[file_path] then
-          preview_window.ignored_paths[file_path] = nil
-          preview_window:add_result_highlights(
-            data.icon_hl,
-            data.line_start,
-            data.file_count_len,
-            data.icon_len,
-            data.num_lines
-          )
-        else
-          preview_window.ignored_paths[file_path] = true
-          vim.api.nvim_buf_clear_highlight(
-            preview_window.bufnr,
-            preview_window_ns,
-            data.line_start,
-            data.line_end
-          )
-          for i = data.line_start, data.line_end - 1 do
-            vim.api.nvim_buf_add_highlight(
-              preview_window.bufnr,
-              preview_window_ns,
-              "PymplePreviewIgnored",
-              i,
-              0,
-              -1
-            )
-          end
-        end
-        break
+  local _ = preview_window:map("n", "<C-j>", function(_)
+    local res_index, _ = preview_window:resolve_hover()
+    if res_index then
+      if res_index < preview_window.num_results then
+        local next_data = preview_window.results_map[res_index + 1]
+        vim.api.nvim_win_set_cursor(0, { next_data.line_start + 1, 0 })
+        return
+      end
+    end
+  end, { noremap = true })
+
+  local _ = preview_window:map("n", "<C-k>", function(_)
+    local res_index, _ = preview_window:resolve_hover()
+    if res_index then
+      if res_index > 1 then
+        local prev_data = preview_window.results_map[res_index - 1]
+        vim.api.nvim_win_set_cursor(0, { prev_data.line_start + 1, 0 })
+        return
+      end
+    end
+  end, { noremap = true })
+
+  local _ = preview_window:map("n", "<C-i>", function(_)
+    local res_index, data = preview_window:resolve_hover()
+    local res_key = make_file_path_key(data.file_path, data.result_line_num)
+    if preview_window.ignored_paths[res_key] then
+      preview_window.ignored_paths[res_key] = nil
+      preview_window:add_result_highlights(
+        data.icon_hl,
+        data.line_start,
+        data.file_count_len,
+        data.icon_len,
+        data.num_lines
+      )
+    else
+      preview_window.ignored_paths[res_key] = true
+      vim.api.nvim_buf_clear_highlight(
+        preview_window.bufnr,
+        preview_window_ns,
+        data.line_start,
+        data.line_end
+      )
+      for i = data.line_start, data.line_end - 1 do
+        vim.api.nvim_buf_add_highlight(
+          preview_window.bufnr,
+          preview_window_ns,
+          "PymplePreviewIgnored",
+          i,
+          0,
+          -1
+        )
       end
     end
   end, { noremap = true })
