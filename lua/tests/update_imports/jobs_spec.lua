@@ -128,7 +128,7 @@ describe("replace_job", function()
   it("run_on_files", function()
     -- setup
     local fixture_file_path = "lua/tests/update_imports/fixtures/file.txt"
-    io.popen("echo 'foo bar baz' > " .. fixture_file_path)
+    assert(io.popen("echo 'foo bar baz' > " .. fixture_file_path))
     local sed_patterns = { "s/foo/bar/" }
     local gg_results = {
       {
@@ -148,6 +148,7 @@ describe("replace_job", function()
     }
     local rjob = jobs.ReplaceJob.new(sed_patterns, gg_results)
     rjob:run_on_files()
+    os.execute("sleep 0.5")
     local handle = assert(io.popen("cat " .. fixture_file_path))
     local result = assert(handle:read("*a"))
     handle:close()

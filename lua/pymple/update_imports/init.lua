@@ -13,6 +13,7 @@ local M = {}
 local function make_split_imports_job(source, destination, filetypes)
   local split = true
   local gg_args = update_imports_jobs.make_gg_args(source, filetypes, split)
+  log.debug("split gg args: " .. gg_args)
   local gg_results = jobs.gg(gg_args)
   if #gg_results == 0 then
     return nil
@@ -32,6 +33,7 @@ M.make_split_imports_job = make_split_imports_job
 ---@return ReplaceJob | nil
 local function make_monolithic_imports_job(source, destination, filetypes)
   local gg_args = update_imports_jobs.make_gg_args(source, filetypes, false)
+  log.debug("monolithic gg args: " .. gg_args)
   local gg_results = jobs.gg(gg_args)
   if #gg_results == 0 then
     return nil

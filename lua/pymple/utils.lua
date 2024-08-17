@@ -386,7 +386,7 @@ M.make_paths_absolute = make_paths_absolute
 ---@param inputstr string: The string to split
 ---@param sep string: The separator to split on
 ---@return string[]: The list of strings
-function M.split_string(inputstr, sep)
+local function split_string(inputstr, sep)
   if sep == nil then
     sep = "%s"
   end
@@ -399,6 +399,8 @@ function M.split_string(inputstr, sep)
   end
   return t
 end
+
+M.split_string = split_string
 
 ---@generic T
 ---@param collection T[]: A collection of booleans
@@ -422,6 +424,58 @@ function M.all(collection)
     end
   end
   return true
+end
+
+---Make a path shorter by replacing segments with their first character
+---e.g. /path/to/file -> /p/t/file
+---@param path string: The path to shorten
+---@param max_length number: The maximum length of the path
+---@return string: The shortened path
+function M.shorten_path(path, max_length)
+  if #path <= max_length or max_length == 0 then
+    return path
+  end
+  local segments = split_string(path, "/")
+  if #segments == 1 then
+    return path
+  end
+  local path_prefix = ""
+  if path:sub(1, 1) == "/" then
+    path_prefix = "/"
+  end
+  -- make the shortest path possible and work upwards
+  local shortest_path_segments = {}
+  for i, segment in ipairs(segments) do
+    if i == #segments then
+      table.insert(shortest_path_segments, segment)
+    else
+      table.insert(shortest_path_segments, segment:sub(1, 1))
+    end
+  end
+  local last_segment = segments[#segments]
+  local shortest_length = path_prefix:len()
+    + 2 * #shortest_path_segments
+    - 1
+    + last_segment:len()
+  -- best we can do
+  if shortest_length >= max_length then
+    return path_prefix .. table.concat(shortest_path_segments, "/")
+  end
+  -- try to make the path shorter by removing segments from the front
+  local current_length = shortest_length
+  local updated_segments = { last_segment }
+  local short_mode = false
+  for i = #shortest_path_segments - 1, 1, -1 do
+    if current_length - 1 + #segments[i] <= max_length and not short_mode then
+      table.insert(updated_segments, 1, segments[i])
+      current_length = current_length - 1 + #segments[i]
+    else
+      short_mode = true
+      table.insert(updated_segments, 1, shortest_path_segments[i])
+    end
+  end
+
+  return path_prefix .. table.concat(updated_segments, "/")
 end
 
 return M

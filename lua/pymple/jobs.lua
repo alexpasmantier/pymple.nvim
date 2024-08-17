@@ -45,7 +45,7 @@ M.SED_INPLACE_ARGS = sed_inplace_args
 ---@return Job: The job that was started
 function M.sed(pattern, file_path, range)
   local sed_command = string.format(
-    "%s %s '%s,%s%s' %s",
+    '%s %s "%s,%s%s" %s',
     sed_binary,
     sed_inplace_args,
     range[1],
@@ -78,7 +78,7 @@ function M.multi_sed(patterns, file_path, range)
     )
   end
   local sed_command = string.format(
-    sed_binary .. " " .. sed_inplace_args .. " '%s' %s",
+    sed_binary .. " " .. sed_inplace_args .. ' "%s" %s',
     table.concat(ranged_patterns, "; "),
     file_path
   )
@@ -87,11 +87,13 @@ function M.multi_sed(patterns, file_path, range)
   job:sync()
 end
 
+local MAX_GG_RESULTS = 5000
+
 --- Runs a gg job and returns the results
 ---@param args string: Arguments to pass to the `gg` command
 ---@return GGJsonResult[]: The results of the gg job
 function M.gg(args)
-  local subcommand = "gg -C -M 2000 " .. args
+  local subcommand = string.format("gg -C -M %s ", MAX_GG_RESULTS) .. args
   log.debug("Starting gg job: " .. subcommand)
   local job = Job:new({
     command = utils.SHELL,

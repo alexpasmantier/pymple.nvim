@@ -216,11 +216,13 @@ function PreviewWindow:render_filepath(
   res_line_num
 )
   local res_count = res_number .. "/" .. self.num_results
+  local original_file_path_key = make_file_path_key(file_path, res_line_num)
+  local maybe_shortened_key = utils.shorten_path(
+    original_file_path_key,
+    self.size.width - 2 - #res_count - #icon - 2
+  )
   vim.api.nvim_buf_set_lines(self.bufnr, line_count, -1, false, {
-    res_count .. " " .. icon .. " " .. make_file_path_key(
-      file_path,
-      res_line_num
-    ),
+    res_count .. " " .. icon .. " " .. maybe_shortened_key,
   })
   vim.api.nvim_buf_set_lines(self.bufnr, line_count + 1, -1, false, {
     SEPARATORS.above
@@ -450,7 +452,7 @@ local function get_editor_size()
   }
 end
 
-local PREVIEW_WINDOW_W_OFFSET = 20
+local PREVIEW_WINDOW_W_OFFSET = 30
 local PREVIEW_WINDOW_H_OFFSET = 15
 
 function M.get_preview_window(r_jobs, num_results, num_files)
