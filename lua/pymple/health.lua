@@ -44,6 +44,7 @@ local required_plugins = {
   { lib = "plenary", optional = false },
   -- nui doesn't have any top level init.lua
   { lib = "nui.object", optional = false },
+  { lib = "nvim-web-devicons", optional = true },
   { lib = "dressing", optional = true },
   { lib = "telescope", optional = true },
   { lib = "nvim-treesitter", optional = true },

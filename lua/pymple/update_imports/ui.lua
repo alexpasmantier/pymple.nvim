@@ -3,11 +3,15 @@ local M = {}
 local Menu = require("nui.menu")
 local Popup = require("nui.popup")
 local utils = require("pymple.utils")
-local icons = require("nvim-web-devicons")
 local udim_utils = require("pymple.update_imports.utils")
 local udim = require("pymple.update_imports")
 local udim_jobs = require("pymple.update_imports.jobs")
 local udim_highlights = require("pymple.update_imports.highlights")
+
+local icons = nil
+if utils.check_plugin_installed("nvim-web-devicons") then
+  icons = require("nvim-web-devicons")
+end
 
 -- TDOO: use user config for keymaps
 function M.get_confirmation_dialog(
@@ -243,8 +247,13 @@ end
 
 function PreviewWindow:render_result(result, line_count, res_num)
   local line_start = line_count
-  local icon, icon_hl =
-    icons.get_icon(result.file_path, vim.fn.fnamemodify(result.file_path, ":e"))
+  local icon, icon_hl = " ", ""
+  if icons then
+    icon, icon_hl = icons.get_icon(
+      result.file_path,
+      vim.fn.fnamemodify(result.file_path, ":e")
+    )
+  end
   line_count = self:render_filepath(
     result.file_path,
     line_count,
