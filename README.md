@@ -1,6 +1,12 @@
 # 🖍️ pymple.nvim
 All your missing Python IDE features for Neovim (WIP 🤓).
 
+
+https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
+
+
+
+
 ## ⚡️ Requirements
 - the [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) lua package
 - the [grip-grab](https://github.com/alexpasmantier/grip-grab) rust search utility (>= 0.2.19)
