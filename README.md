@@ -1,8 +1,15 @@
 # 🖍️ pymple.nvim
-All your missing Python IDE features for Neovim (WIP 🤓).
-
+All your missing Python IDE features for Neovim.
+## TL;DR
+**Automatic refactoring of workspace imports on file move/rename**
 
 https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
+
+**Automatic resolution of workspace symbols**
+
+
+
+https://github.com/user-attachments/assets/f98fe92f-8208-4a05-9063-5bb76256425b
 
 
 
@@ -65,7 +72,7 @@ The following features are currently available:
 
 
 ## ⚙️ Configuration
-Default configuration is as follows:
+Here is the default configuration:
 
 ```lua
 default_config = {
@@ -127,7 +134,12 @@ default_config = {
 
 
 ## 🚀 Usage
-TODO
+Documentation is a work in progress and this section hasn't been written yet.
+
+In the meantime, the pymple.nvim help files might be of help:
+```
+:help pymple.txt
+```
 
 ## 🆘 Help
 If something's not working as expected, please start by running `checkhealth` inside of neovim:
