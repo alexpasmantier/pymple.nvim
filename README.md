@@ -128,20 +128,27 @@ If something's not working as expected, please start by running `checkhealth` in
 ```vim
 :checkhealth pymple
 ```
-<img width="846" alt="Screenshot 2024-07-22 at 13 20 27" src="https://github.com/user-attachments/assets/e9c32971-d679-437d-9d08-114b349569ff">
+<img width="1088" alt="Screenshot 2024-08-17 at 20 09 30" src="https://github.com/user-attachments/assets/99015738-46f4-4b8d-afef-fc710b63ee8d">
 
 
 If that doesn't help, try activating logging and checking the logs for any errors:
 ```lua
 require("pymple").setup({
   logging = {
-    enabled = true,
-    use_file = true,
+    file = {
+      enabled = true,
+      path = vim.fn.stdpath("data") .. "/pymple.vlog",
+      max_lines = 1000, -- feel free to increase this number
+    },
+    -- this might help in some scenarios
+    console = {
+      enabled = false,
+    },
     level = "debug",
   },
 })
 ```
-If you're running a regular unix system, you'll most likely find the logs in `~/.local/share/nvim/pymple.vlog`.
+If you're running a regular unix system, you'll most likely find the logs in `~/.local/share/nvim/pymple.vlog` .
 
 *NOTE*: if you have trouble filtering through the logs, or if you just like colors, maybe [this](https://github.com/alexpasmantier/tree-sitter-vlog) might interest you.
 
