@@ -10,7 +10,6 @@ docs.test = function()
     "./lua/pymple/init.lua",
     "./lua/pymple/config.lua",
     "./lua/pymple/api.lua",
-    "./lua/pymple/jobs.lua",
   }
 
   -- Maybe sort them that depends what you want and need
@@ -21,7 +20,7 @@ docs.test = function()
   -- Output file
   local output_file_handle = io.open(OUTPUT_FILE, "w")
 
-  output_file_handle:write("*pymple.txt*    pymple.nvim Help File\n")
+  output_file_handle:write("*pymple.txt*\n")
 
   for _, input_file in ipairs(input_files) do
     docgen.write(input_file, output_file_handle)

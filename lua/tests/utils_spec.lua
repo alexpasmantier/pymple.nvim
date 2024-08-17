@@ -3,6 +3,24 @@ local FIXTURES_PATH = "lua/tests/fixtures/utils"
 local cwd = vim.fn.getcwd()
 local mock = require("luassert.mock")
 
+describe("find_project_root", function()
+  it("std", function()
+    local result = utils.find_project_root(
+      FIXTURES_PATH .. "/project/src",
+      { "pyproject.toml" }
+    )
+    assert.equals(FIXTURES_PATH .. "/project", result)
+  end)
+
+  it("no root", function()
+    local result = utils.find_project_root(
+      FIXTURES_PATH .. "/project_no_root/a/b/c.py",
+      { "pyproject.toml" }
+    )
+    assert.equals(nil, result)
+  end)
+end)
+
 describe("to_import_path", function()
   it("std", function()
     local result = utils.to_import_path("foo/bar/baz.py")
@@ -141,7 +159,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/no_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf)
+    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[1])
@@ -158,7 +176,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/single_line_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf)
+    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[3])
@@ -175,7 +193,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/multiline_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf)
+    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[6])
@@ -187,7 +205,7 @@ describe("get_virtual_environment", function()
     mock(os, "getenv", function()
       return "/foo/bar"
     end)
-    local result = utils.get_virtual_environment()
+    local result = utils.get_virtual_environment(cwd, {})
     assert.equals("/foo/bar", result)
     mock.revert(os)
   end)
@@ -197,7 +215,7 @@ describe("get_virtual_environment", function()
       .. "/"
       .. FIXTURES_PATH
       .. "/virtual_environments/present"
-    local result = utils.get_virtual_environment(working_dir)
+    local result = utils.get_virtual_environment(working_dir, { ".venv" })
     assert.equals(working_dir .. "/.venv", result)
     mock.revert(vim.fn)
   end)
@@ -206,7 +224,7 @@ describe("get_virtual_environment", function()
     local working_dir = cwd
       .. FIXTURES_PATH
       .. "/virtual_environments/not_present"
-    local result = utils.get_virtual_environment(working_dir)
+    local result = utils.get_virtual_environment(working_dir, { ".venv" })
     assert.equals(nil, result)
   end)
 end)
@@ -247,6 +265,21 @@ describe("deduplicate_list", function()
   end)
 end)
 
+describe("make_relative_to", function()
+  it("std", function()
+    local result = utils.make_relative_to("/foo/bar/baz", "/foo")
+    assert.equals("bar/baz", result)
+  end)
+end)
+
+describe("make_files_relative", function()
+  it("std", function()
+    local result =
+      utils.make_files_relative({ "/foo/bar/baz", "/foo/bar" }, "/foo")
+    assert.same({ "bar/baz", "bar" }, result)
+  end)
+end)
+
 describe("map", function()
   it("std", function()
     local result = utils.map(function(x)
@@ -260,5 +293,65 @@ describe("map", function()
       return x * 2
     end, {})
     assert.same({}, result)
+  end)
+
+  it("extra_args", function()
+    local fn = function(x, n, m)
+      return x + n + m
+    end
+    local result = utils.map(fn, { 1, 2, 3 }, { 10, 20 })
+    assert.same({ 31, 32, 33 }, result)
+  end)
+end)
+
+describe("split_string", function()
+  it("space", function()
+    local result = utils.split_string("foo bar baz", " ")
+    assert.same({ "foo", "bar", "baz" }, result)
+  end)
+
+  it("dot", function()
+    local result = utils.split_string("foo.bar.baz", ".")
+    assert.same({ "foo", "bar", "baz" }, result)
+  end)
+
+  it("no separator in string", function()
+    local result = utils.split_string("foo", ".")
+    assert.same({ "foo" }, result)
+  end)
+
+  it("split on empty string", function()
+    local result = utils.split_string("foo", "")
+    assert.same({ "foo" }, result)
+  end)
+end)
+
+describe("any", function()
+  it("true", function()
+    local result = utils.any({ true, false, true })
+    assert.is_true(result)
+  end)
+  it("false", function()
+    local result = utils.any({ false, false, false })
+    assert.is_false(result)
+  end)
+  it("empty", function()
+    local result = utils.any({})
+    assert.is_false(result)
+  end)
+end)
+
+describe("all", function()
+  it("true", function()
+    local result = utils.all({ true, true, true })
+    assert.is_true(result)
+  end)
+  it("false", function()
+    local result = utils.all({ true, false, true })
+    assert.is_false(result)
+  end)
+  it("empty", function()
+    local result = utils.all({})
+    assert.is_true(result)
   end)
 end)

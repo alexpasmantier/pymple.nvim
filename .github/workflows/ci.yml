@@ -1,7 +1,5 @@
 name: Tests
-
 on: [push]
-
 jobs:
   unit_tests:
     name: unit tests
@@ -13,31 +11,37 @@ jobs:
         rev: [v0.10.0]
         include:
           - os: ubuntu-22.04
-            install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y 
+            install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y
             install-gg: cargo install grip-grab
             install-sed: sudo apt-get install -y sed
           - os: macos-12
-            install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y 
+            install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y
             install-gg: cargo install grip-grab
             install-sed: brew install gnu-sed
-
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          repository: MunifTanjim/nui.nvim
+          path: nui.nvim
+      - uses: actions/checkout@v4
+        with:
+          repository: nvim-lua/plenary.nvim
+          path: plenary.nvim
+      - uses: actions/checkout@v4
+        with:
+          path: pymple.nvim
       - uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
           version: ${{ matrix.rev }}
-
       - name: Prepare
         run: |
           ${{ matrix.install-cargo }}
           ${{ matrix.install-gg }}
           gg --version
-
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../plenary.nvim
-
+          ${{ matrix.install-sed }}
       - name: Run tests
         run: |
+          cd pymple.nvim
           nvim --version
           make test

@@ -1,4 +1,4 @@
-*pymple.txt*    pymple.nvim Help File
+*pymple.txt*
 ================================================================================
 NVIM                                                               *pymple.nvim*
 
@@ -25,14 +25,10 @@ M.setup({opts})                                                    *M.setup()*
 ================================================================================
 CONFIG                                                           *pymple.config*
 
-Configuring the plugin is pretty straightforward at the moment. You can decide
-whether to create user commands or not, how to setup different keymaps, which
-filetypes to update imports for, and whether or not to activate logging.
-
 The default configuration is as follows:
 
 ```lua
-config = {
+default_config = {
   -- automatically register the following keymaps on plugin setup
   keymaps = {
     -- Resolves import for symbol under cursor.
@@ -43,19 +39,6 @@ config = {
       desc = "Resolve import under cursor", -- description for the keymap
     },
   },
-  -- automatically create the following user commands on plugin setup
-  create_user_commands = {
-    -- Update all workspace imports after moving/renaming a file.
-    -- This takes two arguments (old_path, new_path)
-    -- and can be called as ":UpdatePythonImports old_path new_path"
-    update_imports = true,
-    -- Resolve import for symbol under cursor and add it to the top
-    -- of the current buffer.
-    -- This will usually be hooked up by pymple on setup to your file
-    -- explorer's events and get triggered automatically when you move
-    -- or rename a file or a folder.
-    add_import_for_symbol_under_cursor = true,
-  },
   -- options for the update imports feature
   update_imports = {
     -- the filetypes on which to run the update imports command
@@ -65,42 +48,101 @@ config = {
   },
   -- options for the add import to buffer feature
   add_import_to_buf = {
-    -- whether to autosave the buffer after adding the import
+    -- whether to autosave the buffer after adding the import (which will
+    -- automatically format/sort the imports if you have on-save autocommands)
     autosave = true,
   },
   -- logging options
   logging = {
-    -- whether to enable logging
-    enabled = false,
-    -- whether to log to a file (default location is nvim's
-    -- stdpath("data")/pymple.vlog which is usually
+    -- whether or not to log to a file (default location is nvim's
+    -- stdpath("data")/pymple.vlog which will typically be at
     -- `~/.local/share/nvim/pymple.vlog` on unix systems)
-    use_file = false,
+    file = {
+      enabled = true,
+      path = vim.fn.stdpath("data") .. "/pymple.vlog",
+      -- the maximum number of lines to keep in the log file (pymple will
+      -- automatically manage this for you so you don't have to worry about
+      -- the log file getting too big)
+      max_lines = 1000,
+    },
     -- whether to log to the neovim console (only use this for debugging
     -- as it might quickly ruin your neovim experience)
-    use_console = false,
+    console = {
+      enabled = false,
+    },
     -- the log level to use
     -- (one of "trace", "debug", "info", "warn", "error", "fatal")
     level = "debug",
   },
   -- python options
   python = {
-  -- the names of virtual environment folders to look out for
-  virtual_env_names = { ".venv" },
+    -- the names of virtual environment folders to look out for when
+    -- discovering a project
+    virtual_env_names = { "venv", ".venv", "env", ".env", "virtualenv", ".virtualenv" },
+    -- the names of root markers to look out for when discovering a project
+    root_markers = { "pyproject.toml", "setup.py", ".git", "manage.py" },
   },
 }
 ```
+
+config                                                                *config*
+
+
+    Fields: ~
+        {user_config}    (Config)
+        {HL_GROUPS}      (HlGroups)
+        {default_config} (Config)
+
+
+HlGroups                                                            *HlGroups*
+
+
+    Fields: ~
+        {Error}   (string)
+        {Warning} (string)
+        {More}    (string)
+        {Mode}    (string)
+
+
+Keymaps                                                              *Keymaps*
+
+
+
+UpdateImportsOptions                                    *UpdateImportsOptions*
+
+
+    Fields: ~
+        {filetypes} (string[])
+
+
+AddImportToBufOptions                                  *AddImportToBufOptions*
+
+
+    Fields: ~
+        {autosave} (boolean)
+
+
+LoggingOptions                                                *LoggingOptions*
+
+
+
+PythonOptions                                                  *PythonOptions*
+
+
+    Fields: ~
+        {virtual_env_names} (string[])
+        {root_markers}      (string[])
+
 
 Config                                                                *Config*
 
 
     Fields: ~
-        {keymaps}              (Keymaps)
-        {create_user_commands} (UserCommandOptions)
-        {update_imports}       (UpdateImportsOptions)
-        {logging}              (LoggingOptions)
-        {python}               (PythonOptions)
-        {add_import_to_buf}    (AddImportToBufOptions)
+        {keymaps}           (Keymaps)
+        {update_imports}    (UpdateImportsOptions)
+        {add_import_to_buf} (AddImportToBufOptions)
+        {logging}           (LoggingOptions)
+        {python}            (PythonOptions)
 
 
 M.HL_GROUPS()                                                  *M.HL_GROUPS()*
@@ -109,6 +151,13 @@ M.HL_GROUPS()                                                  *M.HL_GROUPS()*
 
 M.default_config()                                        *M.default_config()*
 
+
+
+M:validate_configuration()                        *M:validate_configuration()*
+
+
+    Return: ~
+        boolean
 
 
 
@@ -123,111 +172,28 @@ At the moment, the following functions are exposed:
  - `update_imports`: Update all imports in workspace after renaming `source` to
    `destination`.
 
-M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
+M.add_import_for_symbol_under_cursor({autosave}) *M.add_import_for_symbol_under_cursor()*
     Resolves import for symbol under cursor. This will automatically find and
     add the corresponding import to the top of the file (below any existing
     doctsring)
 
 
+    Parameters: ~
+        {autosave} (boolean)  Whether to autosave the buffer after adding the
+                              import
 
-M.update_imports({source}, {destination})                 *M.update_imports()*
+
+M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
     Update all imports in workspace after renaming `source` to `destination`
 
 
     Parameters: ~
-        {source}      (string)  The path to the source file/dir (before
-                                renaming/moving)
-        {destination} (string)  The path to the destination file/dir (after
-                                renaming/moving)
-
-
-
-================================================================================
-JOBS                                                               *pymple.jobs*
-
-Pymple's jobs module exposes functions that run jobs in the background. These
-will typically be used for tasks like searching for import candidates or
-updating imports in the workspace using `gg` and `sed`.
-
-GGJsonMatch                                                      *GGJsonMatch*
-
-
-    Fields: ~
-        {start} (number)
-        {end}   (number)
-
-
-GGJsonSearchResult                                        *GGJsonSearchResult*
-
-
-    Fields: ~
-        {line_number} (number)
-        {line}        (string)
-        {line_start}  (number)
-        {line_end}    (number)
-        {matches}     (GGJsonMatch[])
-
-
-GGJsonResult                                                    *GGJsonResult*
-
-
-    Fields: ~
-        {path}    (string)
-        {results} (GGJsonSearchResult[])
-
-
-M.global_sed({gg_job_results}, {sed_args})                    *M.global_sed()*
-    Runs a global sed command on the results of a gg job
-
-
-    Parameters: ~
-        {gg_job_results} (GGJsonResult[])  The results of the gg job
-        {sed_args}       (string)          The arguments to pass to sed
-
-
-M.ranged_sed({gg_job_results}, {sed_args})                    *M.ranged_sed()*
-    Runs a ranged sed command on the results of a gg job
-
-
-    Parameters: ~
-        {gg_job_results} (GGJsonResult[])  The results of the gg job
-        {sed_args}       (string)          The arguments to pass to sed
-
-
-M.gg({args})                                                          *M.gg()*
-    Runs a gg job and returns the results
-
-
-    Parameters: ~
-        {args} (string[])  Arguments to pass to the `gg` command
-
-    Return: ~
-        GGJsonResult[]: The results of the gg job
-
-
-M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
-    Finds import candidates in workspace
-
-
-    Parameters: ~
-        {args} (string[])  Arguments to pass to the `gg` command
-
-    Return: ~
-        string[]: The import candidates
-
-
-M.find_import_candidates_in_venv({args}, {site_packages_location}) *M.find_import_candidates_in_venv()*
-    Finds import candidates in venv
-
-
-    Parameters: ~
-        {args}                   (string[])  Arguments to pass to the `gg`
-                                             command
-        {site_packages_location} (string)    The location of the site packages
-                                             directory
-
-    Return: ~
-        string[]: The import candidates
+        {source}      (string)                The path to the source file/dir
+                                              (before renaming/moving)
+        {destination} (string)                The path to the destination
+                                              file/dir (after renaming/moving)
+        {opts}        (UpdateImportsOptions)  Options for the update imports
+                                              operation
 
 
 

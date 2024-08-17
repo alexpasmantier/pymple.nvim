@@ -1,9 +1,10 @@
+local config = require("pymple.config")
+
 local M = {}
 
 ---Setup pymple keymaps
----@param keymaps Keymaps
-M.setup_keymaps = function(keymaps)
-  for k, v in pairs(keymaps) do
+M.setup = function()
+  for k, v in pairs(config.user_config.keymaps) do
     vim.api.nvim_set_keymap(
       "n",
       v.keys,

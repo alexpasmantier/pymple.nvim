@@ -11,74 +11,53 @@
 --- - automatic and configurable creation of test files that mirror your project
 ---   structure
 ---@brief ]]
-local M = {}
 
 local config = require("pymple.config")
 local keymaps = require("pymple.keymaps")
-local api = require("pymple.api")
-local utils = require("pymple.utils")
-local print_err = utils.print_err
+local user_commands = require("pymple.user_commands")
 local log = require("pymple.log")
 local hooks = require("pymple.hooks")
+
+local M = {}
 
 --- Setup pymple.nvim with the provided configuration
 ---@param opts Config
 local function setup(opts)
   opts = opts or {}
 
-  setmetatable(opts, { __index = config.default_config })
-  config.set_user_config(opts)
+  config:set_user_config(opts)
 
-  if opts.logging.enabled then
-    opts.logging.enabled = nil
-    log.new(opts.logging, true)
-    log.debug("Logging enabled")
+  -- Setup logging
+  if
+    config.user_config.logging.file ~= nil
+    or config.user_config.logging.console ~= nil
+  then
+    log.new(config.user_config.logging, true)
+    log.info("--------------------------------------------------------------")
+    log.info("---                   NEW PYMPLE SESSION                   ---")
+    log.info("--------------------------------------------------------------")
   else
     log.new(log.off_config, true)
   end
 
-  if not utils.table_contains(opts.update_imports.filetypes, "python") then
-    print_err(
-      "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
-    )
+  -- Validate configuration
+  if not config:validate_configuration() then
+    return
   end
 
-  if opts.create_user_commands.update_imports then
-    vim.api.nvim_create_user_command("UpdatePythonImports", function(args)
-      api.update_imports(args.fargs[1], args.fargs[2])
-    end, {
-      desc = [[Update all imports in workspace after renaming `source` to
-      `destination`]],
-      nargs = "+",
-    })
-    log.debug("Created UpdatePythonImports user command")
-  end
+  -- Setup user commands
+  user_commands.setup()
 
-  if opts.create_user_commands.add_import_for_symbol_under_cursor then
-    vim.api.nvim_create_user_command(
-      "PympleAddImportForSymbolUnderCursor",
-      function(_)
-        require("pymple.api").add_import_for_symbol_under_cursor()
-      end,
-      {
-        desc = [[Resolves import for symbol under cursor. This will
-        automatically find and add the corresponding import to the top of the
-        file (below any existing doctsring)]],
-      }
-    )
-    log.debug("Created PympleAddImportForSymbolUnderCursor user command")
-  end
+  -- Setup keymaps
+  keymaps.setup()
 
-  keymaps.setup_keymaps(opts.keymaps)
-  log.debug("Set up keymaps")
-
+  -- Setup hooks
   hooks.setup()
 end
 
 --- Setup pymple.nvim with the provided configuration
 ---@param opts Config
 function M.setup(opts)
-  opts = opts or config.default_config
   setup(opts)
   log.debug("Pymple setup complete")
 end

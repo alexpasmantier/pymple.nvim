@@ -4,15 +4,28 @@
 --- These will typically be used for tasks like searching for import candidates
 --- or updating imports in the workspace using `gg` and `sed`.
 ---@brief ]]
+
 M = {}
 
 local Job = require("plenary.job")
 local utils = require("pymple.utils")
 local log = require("pymple.log")
+local fs = require("pymple.fs")
+
+local os_name = vim.loop.os_uname().sysname
+
+local sed_binary = "sed"
+local sed_inplace_args = "-i"
+if os_name == "Darwin" then
+  sed_binary = "gsed"
+end
+
+M.SED_BINARY = sed_binary
+M.SED_INPLACE_ARGS = sed_inplace_args
 
 ---@class GGJsonMatch
----@field start number
----@field end number
+---@field m_start number
+---@field m_end number
 
 ---@class GGJsonSearchResult
 ---@field line_number number
@@ -25,77 +38,60 @@ local log = require("pymple.log")
 ---@field path string
 ---@field results GGJsonSearchResult[]
 
---- Runs a global sed command on the results of a gg job
----@param gg_job_results GGJsonResult[]: The results of the gg job
----@param sed_args string: The arguments to pass to sed
-function M.global_sed(gg_job_results, sed_args)
-  local file_paths = {}
-  for _, result in ipairs(gg_job_results) do
-    table.insert(file_paths, result.path)
-  end
-  file_paths = utils.deduplicate_list(file_paths)
-  if #file_paths == 0 then
-    return
-  end
-  local sed_command = "sed -i '' "
-    .. sed_args
-    .. " "
-    .. table.concat(file_paths, " ")
-  log.debug("Sed command: " .. sed_command)
-  Job:new({
-    command = "zsh",
-    args = {
-      "-c",
-      sed_command,
-    },
-  }):start()
+--- Runs a sed command
+---@param pattern string: The pattern to pass to sed
+---@param file_path string: The path to the file to run the sed command on
+---@param range number[]: The range of lines to run the sed command on
+---@return Job: The job that was started
+function M.sed(pattern, file_path, range)
+  local sed_command = string.format(
+    "%s %s '%s,%s%s' %s",
+    sed_binary,
+    sed_inplace_args,
+    range[1],
+    range[2],
+    pattern,
+    file_path
+  )
+  local job = Job:new({ command = utils.SHELL, args = { "-c", sed_command } })
+
+  log.debug(
+    "Open file descriptors: "
+      .. fs.get_open_file_descriptors()
+      .. "/"
+      .. fs.max_open_file_descriptors
+  )
+  -- while fs.get_open_file_descriptors() >= fs.max_open_file_descriptors do
+  --   -- if we're close to the limit, wait a bit
+  --   vim.wait(100)
+  -- end
+  job:start()
+  return job
 end
 
---- Runs a ranged sed command on the results of a gg job
----@param gg_job_results GGJsonResult[]: The results of the gg job
----@param sed_args string: The arguments to pass to sed
-function M.ranged_sed(gg_job_results, sed_args)
-  local matches = {}
-  for _, file_result in ipairs(gg_job_results) do
-    for _, search_result in ipairs(file_result.results) do
-      table.insert(matches, {
-        path = file_result.path,
-        lines = {
-          search_result.line_start,
-          search_result.line_end,
-        },
-      })
-    end
-  end
-  if #matches == 0 then
-    return
-  end
-  for _, match in ipairs(matches) do
-    log.debug(
-      "Match: "
-        .. match.path
-        .. " line start: "
-        .. match.lines[1]
-        .. " line end: "
-        .. match.lines[2]
+function M.multi_sed(patterns, file_path, range)
+  local ranged_patterns = {}
+  for _, pattern in ipairs(patterns) do
+    table.insert(
+      ranged_patterns,
+      string.format("%s,%s" .. pattern, range[1], range[2])
     )
-    local sed_command = "sed -i ''"
-      .. string.format(sed_args, match.lines[1], match.lines[2])
-      .. " "
-      .. match.path
-    log.debug("Sed command: " .. sed_command)
-    Job:new({
-      command = utils.SHELL,
-      args = { "-c", sed_command },
-    }):start()
   end
+  local sed_command = string.format(
+    sed_binary .. " " .. sed_inplace_args .. " '%s' %s",
+    table.concat(ranged_patterns, "; "),
+    file_path
+  )
+  log.debug("Running sed command: " .. sed_command)
+  local job = Job:new({ command = utils.SHELL, args = { "-c", sed_command } })
+  job:sync()
 end
 
 --- Runs a gg job and returns the results
----@param args string[]: Arguments to pass to the `gg` command
+---@param args string: Arguments to pass to the `gg` command
 ---@return GGJsonResult[]: The results of the gg job
 function M.gg(args)
-  local subcommand = "gg -C " .. table.concat(args, " ")
+  local subcommand = "gg -C -M 2000 " .. args
   log.debug("Starting gg job: " .. subcommand)
   local job = Job:new({
     command = utils.SHELL,
@@ -105,6 +101,15 @@ function M.gg(args)
   local gg_results = {}
   for _, file_result in ipairs(job:result()) do
     local t = vim.json.decode(file_result)
+    -- this is unfortunate but `end` is a reserved keyword in Lua
+    for _, sr in ipairs(t.results) do
+      for _, m in ipairs(sr.matches) do
+        m.m_start = m["start"]
+        m.m_end = m["end"]
+        m["start"] = nil
+        m["end"] = nil
+      end
+    end
     table.insert(gg_results, t)
   end
   log.debug(#gg_results .. " results found")
@@ -116,9 +121,11 @@ end
 ---@return string[]: The import candidates
 function M.find_import_candidates_in_workspace(args)
   local candidates = {}
+  local gg_command = "gg " .. table.concat(args, " ")
+  log.debug("GG command: " .. gg_command)
   local job = Job:new({
     command = utils.SHELL,
-    args = { "-c", "gg " .. table.concat(args, " ") },
+    args = { "-c", gg_command },
     on_exit = function(job, _)
       local results = job:result()
       if #results ~= 0 then

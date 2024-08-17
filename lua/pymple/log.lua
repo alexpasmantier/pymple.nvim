@@ -1,43 +1,16 @@
--- log.lua
---
--- Inspired by rxi/log.lua
--- Modified by tjdevries and can be found at github.com/tjdevries/vlog.nvim
---
--- This library is free software; you can redistribute it and/or modify it
--- under the terms of the MIT license. See LICENSE for details.
+-- largely inspired by tjdevries/vlog.nvim
 
--- User configuration section
-local default_config = {
-  -- Name of the plugin. Prepended to log messages
-  plugin = "pymple.nvim",
-
-  -- Should print the output to neovim while running
-  use_console = false,
-
-  -- Should highlighting be used in console (using echohl)
-  highlights = true,
-
-  -- Should write to a file
-  use_file = true,
-
-  -- Any messages above this level will be logged.
-  level = "warn",
-
-  -- Level configuration
-  modes = {
-    { name = "trace", hl = "Comment" },
-    { name = "debug", hl = "Comment" },
-    { name = "info", hl = "@string" },
-    { name = "warn", hl = "WarningMsg" },
-    { name = "error", hl = "ErrorMsg" },
-    { name = "fatal", hl = "ErrorMsg" },
-  },
-
-  -- Can limit the number of decimals displayed for floats
-  float_precision = 0.01,
+local modes = {
+  { name = "trace", hl = "Comment" },
+  { name = "debug", hl = "Comment" },
+  { name = "info", hl = "@string" },
+  { name = "warn", hl = "WarningMsg" },
+  { name = "error", hl = "ErrorMsg" },
+  { name = "fatal", hl = "ErrorMsg" },
 }
+local FLOAT_PRECISION = 0.01
+local PLUGIN_NAME = "pymple.nvim"
 
--- {{{ NO NEED TO CHANGE
 local log = {}
 log.off_config = {
   use_console = false,
@@ -52,14 +25,38 @@ setmetatable(log, {
 
 local unpack = unpack or table.unpack
 
-log.new = function(config, standalone)
-  config = vim.tbl_deep_extend("force", default_config, config)
+---@param logfile string: The path to the logfile
+---@param max_lines number: The maximum number of lines to keep in the logfile
+local function maybe_trim_logfile(logfile, max_lines)
+  -- check if the logfile exists
+  if vim.fn.filereadable(logfile) == 0 then
+    return
+  end
+  local handle = assert(io.popen("wc -l " .. logfile))
+  local num_lines = handle:read("*a")
+  handle:close()
 
-  local outfile = string.format(
-    "%s/%s.vlog",
-    vim.api.nvim_call_function("stdpath", { "data" }),
-    config.plugin
-  )
+  num_lines = tonumber(string.match(num_lines, "%d+"))
+  if num_lines > max_lines then
+    local lines_to_delete = num_lines - max_lines
+    local sed_command =
+      string.format("sed -i '' '1,%dd' %s", lines_to_delete, logfile)
+    os.execute(sed_command)
+  end
+end
+
+---@param config LoggingOptions: The configuration for the logger
+log.new = function(config, standalone)
+  local outfile = config.file.path
+    or string.format(
+      "%s/%s.vlog",
+      vim.api.nvim_call_function("stdpath", { "data" }),
+      PLUGIN_NAME
+    )
+
+  if config.file.enabled then
+    maybe_trim_logfile(outfile, config.file.max_lines)
+  end
 
   local obj
   if standalone then
@@ -69,7 +66,7 @@ log.new = function(config, standalone)
   end
 
   local levels = {}
-  for i, v in ipairs(config.modes) do
+  for i, v in ipairs(modes) do
     levels[v.name] = i
   end
 
@@ -84,8 +81,8 @@ log.new = function(config, standalone)
     for i = 1, select("#", ...) do
       local x = select(i, ...)
 
-      if type(x) == "number" and config.float_precision then
-        x = tostring(round(x, config.float_precision))
+      if type(x) == "number" and FLOAT_PRECISION then
+        x = tostring(round(x, FLOAT_PRECISION))
       elseif type(x) == "table" then
         x = vim.inspect(x)
       else
@@ -109,7 +106,7 @@ log.new = function(config, standalone)
     local lineinfo = info.short_src .. ":" .. info.currentline
 
     -- Output to console
-    if config.use_console then
+    if config.console.enabled then
       local console_string = string.format(
         "[%-6s%s] %s: %s",
         nameupper,
@@ -118,28 +115,24 @@ log.new = function(config, standalone)
         msg
       )
 
-      if config.highlights and level_config.hl then
+      if level_config.hl then
         vim.cmd(string.format("echohl %s", level_config.hl))
       end
 
       local split_console = vim.split(console_string, "\n")
       for _, v in ipairs(split_console) do
         vim.cmd(
-          string.format(
-            [[echom "[%s] %s"]],
-            config.plugin,
-            vim.fn.escape(v, '"')
-          )
+          string.format([[echom "[%s] %s"]], PLUGIN_NAME, vim.fn.escape(v, '"'))
         )
       end
 
-      if config.highlights and level_config.hl then
+      if level_config.hl then
         vim.cmd("echohl NONE")
       end
     end
 
     -- Output to log file
-    if config.use_file then
+    if config.file.enabled then
       local fp = io.open(outfile, "a")
       local str =
         string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
@@ -148,7 +141,7 @@ log.new = function(config, standalone)
     end
   end
 
-  for i, x in ipairs(config.modes) do
+  for i, x in ipairs(modes) do
     obj[x.name] = function(...)
       return log_at_level(i, x, make_string, ...)
     end

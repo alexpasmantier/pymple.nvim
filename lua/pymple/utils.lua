@@ -1,8 +1,8 @@
 M = {}
 
 local filetype = require("plenary.filetype")
-local cfg = require("pymple.config")
 local log = require("pymple.log")
+local Path = require("plenary.path")
 
 local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 
@@ -56,6 +56,31 @@ function M.check_plugin_installed(plugin_name)
   return lualib_installed(plugin_name)
 end
 
+local MAX_UPWARD_JUMPS = 5
+
+---Find the root of a python project
+---@param starting_dir string | nil: The directory to start searching from
+---@return string | nil: The root of the python project
+local function find_project_root(starting_dir, root_markers)
+  local dir = starting_dir or vim.fn.getcwd()
+  local jumps = 0
+  while dir ~= "/" do
+    if jumps > MAX_UPWARD_JUMPS then
+      return nil
+    end
+    for _, marker in ipairs(root_markers) do
+      if vim.fn.glob(dir .. "/" .. marker) ~= "" then
+        return dir
+      end
+    end
+    dir = vim.fn.fnamemodify(dir, ":h")
+    jumps = jumps + 1
+  end
+  return nil
+end
+
+M.find_project_root = find_project_root
+
 ---Converts a path to an import path
 ---@param module_path string: The path to a python module
 ---@return string: The import path for the module
@@ -66,7 +91,7 @@ end
 
 ---Splits an import path on the last separator
 ---@param import_path string: The import path to be split
----@return string | nil, string: The base path and the last part of the import path
+---@return string, string: The base path and the last part of the import path
 function M.split_import_on_last_separator(import_path)
   local base_path, module_name = import_path:match("(.-)%.?([^%.]+)$")
   return base_path, module_name
@@ -164,9 +189,10 @@ function M.add_import_to_buffer(import_path, symbol, buf, autosave)
 end
 
 ---@param path string: The path in which to search for a virtual environment
+---@param venv_names string[]: The names of the virtual environment directories
 ---@return string | nil: The path to the virtual environment, or nil if it doesn't exist
-local function dir_contains_virtualenv(path)
-  for _, venv_name in ipairs(cfg.user_config.python.virtual_env_names) do
+local function dir_contains_virtualenv(path, venv_names)
+  for _, venv_name in ipairs(venv_names) do
     local venv_path = path .. "/" .. venv_name
     if vim.fn.isdirectory(venv_path) == 1 then
       return venv_path
@@ -177,15 +203,16 @@ end
 
 ---Get the path to the current virtual environment, or nil if we can't find one
 ---@param from_path string: The path to start searching from
+---@param venv_names string[]: The names of the virtual environment directories
 ---@return string | nil: The path to the current virtual environment
-function M.get_virtual_environment(from_path)
+function M.get_virtual_environment(from_path, venv_names)
   local venv = os.getenv("VIRTUAL_ENV")
   if venv then
     return venv
   end
   local current_path = from_path
   while current_path ~= vim.fn.expand("~") do
-    local venv_path = dir_contains_virtualenv(current_path)
+    local venv_path = dir_contains_virtualenv(current_path, venv_names)
     if venv_path then
       return venv_path
     end
@@ -234,7 +261,7 @@ M.print_msg = print_msg
 ---Print an error message to the console
 ---@param err_msg string: The error message to print
 function M.print_err(err_msg)
-  print_msg(err_msg, cfg.HL_GROUPS.Error)
+  print_msg(err_msg, "ErrorMsg")
   if log.error then
     log.error(err_msg)
   end
@@ -243,7 +270,7 @@ end
 ---Print an info message to the console
 ---@param info_msg string: The info message to print
 function M.print_info(info_msg)
-  print_msg(info_msg, cfg.HL_GROUPS.More)
+  print_msg(info_msg, "InfoMsg")
   log.info(info_msg)
 end
 
@@ -292,26 +319,104 @@ function M.deduplicate_list(list)
   return result
 end
 
----Make a list of files relative to current directory
----@param files string[]: The list of files
-function M.make_files_relative(files)
-  local result = {}
-  for _, file in ipairs(files) do
-    table.insert(result, vim.fn.fnamemodify(file, ":."))
-  end
-  return result
-end
-
 ---Map a function over a list
----@param func function: The function to map
----@param list any[]: The list to map over
----@return any[]: The mapped list
-function M.map(func, list)
+---@generic T
+---@generic U
+---@param func function(T): U: The function to map
+---@param list T[]: The list to map over
+---@param extra_args table: Extra arguments to pass to the function
+---@return U[]: The mapped list
+local map = function(func, list, extra_args)
   local mapped = {}
   for _, item in ipairs(list) do
-    table.insert(mapped, func(item))
+    if not extra_args then
+      table.insert(mapped, func(item))
+    else
+      mapped[#mapped + 1] = func(item, unpack(extra_args))
+    end
   end
   return mapped
+end
+
+M.map = map
+
+---Make a file path relative to a root directory
+---@param file string: The file path
+---@param root string: The root directory
+---@return string: The relative file path
+local make_relative_to = function(file, root)
+  ---@type Path
+  local f = Path:new(vim.fn.fnamemodify(file, ":p"))
+  local r = Path:new(root)
+  local rel_f = f:make_relative(r:absolute())
+  return rel_f
+end
+
+M.make_relative_to = make_relative_to
+
+---Make a list of files relative to current directory
+---@param files string[]: The list of files
+---@param root string: The root directory
+---@return string[]: The list of relative file paths
+function M.make_files_relative(files, root)
+  return map(function(file)
+    return make_relative_to(file, root)
+  end, files, {})
+end
+
+local function make_path_absolute(path)
+  if path:sub(1, 1) == "/" then
+    return path
+  end
+  return vim.fn.fnamemodify(path, ":p")
+end
+
+local function make_paths_absolute(paths)
+  return map(make_path_absolute, paths, {})
+end
+
+M.make_paths_absolute = make_paths_absolute
+
+---Split a string on a separator
+---@param inputstr string: The string to split
+---@param sep string: The separator to split on
+---@return string[]: The list of strings
+function M.split_string(inputstr, sep)
+  if sep == nil then
+    sep = "%s"
+  end
+  if sep == "" then
+    return { inputstr }
+  end
+  local t = {}
+  for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
+    table.insert(t, str)
+  end
+  return t
+end
+
+---@generic T
+---@param collection T[]: A collection of booleans
+---@return boolean
+function M.any(collection)
+  for _, v in ipairs(collection) do
+    if v then
+      return true
+    end
+  end
+  return false
+end
+
+---@generic T
+---@param collection T[]: A collection of booleans
+---@return boolean
+function M.all(collection)
+  for _, v in ipairs(collection) do
+    if not v then
+      return false
+    end
+  end
+  return true
 end
 
 return M
