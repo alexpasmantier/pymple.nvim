@@ -39,22 +39,28 @@ for _, binary in ipairs(required_binaries) do
 end
 
 local required_plugins = {
-  {
-    name = "nvim-treesitter",
-    help = "https://github.com/nvim-treesitter/nvim-treesitter",
-  },
-  {
-    name = "telescope",
-    help = "https://github.com/nvim-telescope/telescope.nvim",
-  },
+  -- {
+  --   name = "nvim-treesitter",
+  --   help = "https://github.com/nvim-treesitter/nvim-treesitter",
+  -- },
+  -- {
+  --   name = "telescope",
+  --   help = "https://github.com/nvim-telescope/telescope.nvim",
+  -- },
   {
     name = "plenary",
+    importable_name = "plenary",
     help = "https://github.com/nvim-lua/plenary.nvim",
+  },
+  {
+    name = "nui",
+    importable_name = "nui.object",
+    help = "https://github.com/MunifTanjim/nui.nvim",
   },
 }
 
 for _, plugin in ipairs(required_plugins) do
-  if not utils.check_plugin_installed(plugin.name) then
+  if not utils.check_plugin_installed(plugin.importable_name) then
     utils.print_err(
       "Plugin "
         .. plugin.name
