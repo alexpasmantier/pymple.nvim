@@ -8,7 +8,6 @@
 M = {}
 
 local Job = require("plenary.job")
-local async = require("plenary.async")
 local utils = require("pymple.utils")
 local log = require("pymple.log")
 local fs = require("pymple.fs")
