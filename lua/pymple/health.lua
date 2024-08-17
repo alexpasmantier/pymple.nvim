@@ -57,8 +57,6 @@ local required_plugins = {
   { lib = "nvim-web-devicons", optional = true },
   { lib = "dressing", optional = true },
   { lib = "telescope", optional = true },
-  { lib = "nvim-treesitter", optional = true },
-  { lib = "neo-tree", optional = true },
 }
 
 M.required_plugins = required_plugins

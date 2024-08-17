@@ -4,6 +4,7 @@ local utils = require("pymple.utils")
 local jobs = require("pymple.jobs")
 local Path = require("plenary.path")
 local print_err = require("pymple.utils").print_err
+local Project = require("pymple.project")
 
 -- classes, functions, and variables
 local class_pattern = [['^class\s+%s\b']]
@@ -40,7 +41,7 @@ function M.resolve_python_import(symbol, current_file_path)
     return
   end
   local cwd = vim.fn.getcwd()
-  local venv = utils.get_virtual_environment(cwd)
+  local venv = Project.venv
   local site_packages_location = Path:new(utils.get_site_packages_location())
     :make_relative(cwd)
 

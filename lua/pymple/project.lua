@@ -2,6 +2,9 @@ local utils = require("pymple.utils")
 local config = require("pymple.config")
 local log = require("pymple.log")
 
+---@class Project
+---@field root string
+---@field venv string
 local Project = {}
 
 local cache = {}
