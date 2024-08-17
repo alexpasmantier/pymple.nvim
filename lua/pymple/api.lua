@@ -20,14 +20,14 @@ local udim = require("pymple.update_imports")
 local udim_utils = require("pymple.update_imports.utils")
 local udim_ui = require("pymple.update_imports.ui")
 local async = require("plenary.async")
+local config = require("pymple.config")
 
 local M = {}
 
 ---Resolves import for symbol under cursor.
 ---This will automatically find and add the corresponding import to the top of
 ---the file (below any existing doctsring)
----@param autosave boolean: Whether to autosave the buffer after adding the import
-M.add_import_for_symbol_under_cursor = function(autosave)
+M.add_import_for_symbol_under_cursor = function()
   local symbol = vim.fn.expand("<cword>")
   if symbol == "" then
     print_err("No symbol found under cursor.")
@@ -62,12 +62,17 @@ M.add_import_for_symbol_under_cursor = function(autosave)
     return
   elseif #candidates == 1 then
     local final_import = candidates[1]
-    utils.add_import_to_buffer(final_import, symbol, 0, autosave)
+    utils.add_import_to_buffer(
+      final_import,
+      symbol,
+      0,
+      config.user_config.add_import_to_buf.autosave
+    )
     log.debug("Added import for " .. symbol .. ": " .. final_import)
   else
     local longest_candidate = utils.longest_string_in_list(candidates)
     local telescope_opts = {}
-    if utils.check_plugin_installed("telescope.nvim") then
+    if utils.check_plugin_installed("telescope") then
       telescope_opts = require("telescope.themes").get_cursor({
         layout_config = {
           width = #longest_candidate + TELESCOPE_WIDTH_PADDING,
@@ -88,7 +93,12 @@ M.add_import_for_symbol_under_cursor = function(autosave)
       if selected then
         local final_import = selected
         log.debug("Selected import: " .. final_import)
-        utils.add_import_to_buffer(final_import, symbol, 0, autosave)
+        utils.add_import_to_buffer(
+          final_import,
+          symbol,
+          0,
+          config.user_config.add_import_to_buf.autosave
+        )
         log.debug("Added import for " .. symbol .. ": " .. final_import)
       end
     end)

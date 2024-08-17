@@ -184,11 +184,11 @@ function ReplaceJob:async_run_on_lines(channel)
       for _, pattern in ipairs(self.sed_patterns) do
         local handle = assert(
           io.popen(
-            "echo '"
+            'echo "'
               .. line_after
-              .. string.format("' | %s '", jobs.SED_BINARY)
+              .. string.format('" | %s "', jobs.SED_BINARY)
               .. pattern
-              .. "'"
+              .. '"'
           )
         )
         -- sed adds a newline at the end of the line
@@ -211,7 +211,6 @@ M.ReplaceJob = ReplaceJob
 ---@param ignored_paths {string: number[]}
 local function is_path_ignored(path, ignored_paths)
   for p, _ in pairs(ignored_paths) do
-    log.debug(p)
     if path == p then
       return true
     end
@@ -261,8 +260,6 @@ function M.filter_rjob_targets(r_job, ignored_keys)
     end
   end
   local new_job = ReplaceJob.new(r_job.sed_patterns, modified_targets)
-  log.debug(r_job)
-  log.debug(new_job)
   return new_job
 end
 

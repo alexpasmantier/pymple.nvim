@@ -67,7 +67,6 @@ local check_binary_installed = function(p)
   if binaries[os_name] then
     binaries = { binaries[os_name] }
   end
-  log.debug(binaries)
   for _, binary in pairs(binaries) do
     local found = vim.fn.executable(binary) == 1
     -- if not found and is_win then
