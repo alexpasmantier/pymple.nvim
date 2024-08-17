@@ -12,6 +12,17 @@ local utils = require("pymple.utils")
 local log = require("pymple.log")
 local fs = require("pymple.fs")
 
+local os_name = vim.loop.os_uname().sysname
+
+local sed_binary = "sed"
+local sed_inplace_args = "-i"
+if os_name == "Darwin" then
+  sed_binary = "gsed"
+end
+
+M.SED_BINARY = sed_binary
+M.SED_INPLACE_ARGS = sed_inplace_args
+
 ---@class GGJsonMatch
 ---@field m_start number
 ---@field m_end number
@@ -34,7 +45,9 @@ local fs = require("pymple.fs")
 ---@return Job: The job that was started
 function M.sed(pattern, file_path, range)
   local sed_command = string.format(
-    "sed -i '' '%s,%s%s' %s",
+    "%s %s '%s,%s%s' %s",
+    sed_binary,
+    sed_inplace_args,
     range[1],
     range[2],
     pattern,
@@ -65,7 +78,7 @@ function M.multi_sed(patterns, file_path, range)
     )
   end
   local sed_command = string.format(
-    "sed -i '' '%s' %s",
+    sed_binary .. " " .. sed_inplace_args .. " '%s' %s",
     table.concat(ranged_patterns, "; "),
     file_path
   )

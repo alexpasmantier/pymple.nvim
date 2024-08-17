@@ -153,7 +153,13 @@ function ReplaceJob:run_on_lines()
       local line_after = line_before
       for _, pattern in ipairs(self.sed_patterns) do
         local handle = assert(
-          io.popen("echo '" .. line_after .. "' | sed '" .. pattern .. "'")
+          io.popen(
+            "echo '"
+              .. line_after
+              .. string.format("' | %s '", jobs.SED_BINARY)
+              .. pattern
+              .. "'"
+          )
         )
         -- sed adds a newline at the end of the line
         line_after = assert(handle:read("*a")):gsub("\n$", "")
@@ -177,7 +183,13 @@ function ReplaceJob:async_run_on_lines(channel)
       local line_after = line_before
       for _, pattern in ipairs(self.sed_patterns) do
         local handle = assert(
-          io.popen("echo '" .. line_after .. "' | sed '" .. pattern .. "'")
+          io.popen(
+            "echo '"
+              .. line_after
+              .. string.format("' | %s '", jobs.SED_BINARY)
+              .. pattern
+              .. "'"
+          )
         )
         -- sed adds a newline at the end of the line
         line_after = assert(handle:read("*a")):gsub("\n$", "")

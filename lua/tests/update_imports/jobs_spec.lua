@@ -148,8 +148,6 @@ describe("replace_job", function()
     }
     local rjob = jobs.ReplaceJob.new(sed_patterns, gg_results)
     rjob:run_on_files()
-    -- kind of ugly
-    os.execute("sleep 0.2")
     local handle = assert(io.popen("cat " .. fixture_file_path))
     local result = assert(handle:read("*a"))
     handle:close()

@@ -1,4 +1,5 @@
 local utils = require("pymple.utils")
+local health = require("pymple.health")
 
 local function handle_error(err)
   -- Extract the actual error message without the traceback
@@ -6,47 +7,45 @@ local function handle_error(err)
   utils.print_err(error_message)
 end
 
-local required_binaries = {
-  {
-    name = "sed",
-    binary = "sed",
-    help = "https://www.gnu.org/software/sed/manual/sed.html",
-  },
-  {
-    name = "gg",
-    binary = "gg",
-    help = "https://github.com/alexpasmantier/grip-grab",
-    min_version = "0.2.20",
-  },
-}
+for _, binaries in ipairs(health.required_binaries) do
+  for _, p in ipairs(binaries.package) do
+    local installed, version = health.check_binary_installed(p)
 
-for _, binary in ipairs(required_binaries) do
-  local installed, version = utils.check_binary_installed(binary.binary)
+    if not installed then
+      utils.print_err(
+        "Binary "
+          .. p.name
+          .. " is not installed. Please install it to use pymple.nvim. For more information, see "
+          .. p.help
+      )
+    end
 
-  if not installed then
-    utils.print_err(
-      "Binary "
-        .. binary.name
-        .. " is not installed. Please install it to use pymple.nvim. For more information, see "
-        .. binary.help
-    )
+    if
+      installed
+      and version
+      and version ~= "(unknown version)"
+      and (p.min_version or p.max_version)
+      and not health.version_satisfies_constraint(
+        version,
+        p.min_version,
+        p.max_version
+      )
+    then
+      utils.print_err(
+        string.format(
+          "Binary %s (%s) is installed, but the version is either too old or too recent (min: %s, max: %s). Please update it to use pymple.nvim. For more information, see %s",
+          p.name,
+          version,
+          p.min_version,
+          p.max_version,
+          p.help
+        )
+      )
+    end
   end
-
-  --   -- TODO: finish this
-  --   if installed and version then
-  --     print("Found " .. binary.name .. " version: " .. version)
-  --   end
 end
 
 local required_plugins = {
-  -- {
-  --   name = "nvim-treesitter",
-  --   help = "https://github.com/nvim-treesitter/nvim-treesitter",
-  -- },
-  -- {
-  --   name = "telescope",
-  --   help = "https://github.com/nvim-telescope/telescope.nvim",
-  -- },
   {
     name = "plenary",
     importable_name = "plenary",
