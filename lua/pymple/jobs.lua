@@ -41,7 +41,7 @@ function M.sed(pattern, file_path, range)
     pattern,
     file_path
   )
-  local job = Job:new({ command = "zsh", args = { "-c", sed_command } })
+  local job = Job:new({ command = utils.SHELL, args = { "-c", sed_command } })
 
   log.debug(
     "Open file descriptors: "
@@ -71,7 +71,7 @@ function M.multi_sed(patterns, file_path, range)
     file_path
   )
   log.debug("Running sed command: " .. sed_command)
-  local job = Job:new({ command = "zsh", args = { "-c", sed_command } })
+  local job = Job:new({ command = utils.SHELL, args = { "-c", sed_command } })
   job:sync()
 end
 
