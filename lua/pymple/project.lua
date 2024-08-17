@@ -1,21 +1,16 @@
 local utils = require("pymple.utils")
+local config = require("pymple.config")
 local log = require("pymple.log")
 
-local M = {}
+local Project = {}
 
--- TODO: finish refactoring project so that it lazyloads in the rest of the code
+local cache = {}
 
----@class ProjectConfig
----@field venv string
----@field root string
-local ProjectConfig = {}
-
----@param config Config
 ---@return string | nil
-local function venv(config)
+local function venv()
   local venv_location = utils.get_virtual_environment(
     vim.fn.getcwd(),
-    config.python.virtual_env_names
+    config.user_config.python.virtual_env_names
   )
   if venv_location == nil then
     log.warn("No virtual environment found.")
@@ -23,11 +18,11 @@ local function venv(config)
   return venv_location
 end
 
----@param config Config
 ---@return string
-local function project_root(config)
+local function root_dir()
   local cwd = vim.fn.getcwd()
-  local p_root = utils.find_project_root(cwd, config.python.root_markers)
+  local p_root =
+    utils.find_project_root(cwd, config.user_config.python.root_markers)
   if p_root == nil then
     log.warn(
       "No project root found. Defaulting to current working directory: ",
@@ -37,14 +32,20 @@ local function project_root(config)
   return p_root or cwd
 end
 
-setmetatable(ProjectConfig, {
-  __index = function(tbl, key)
+setmetatable(Project, {
+  __index = function(_, key)
+    if cache[key] then
+      return cache[key]
+    end
+    if key == "root" then
+      cache[key] = root_dir()
+      return cache[key]
+    end
     if key == "venv" then
-      return venv(tbl)
-    elseif key == "root" then
-      return project_root(tbl)
+      cache[key] = venv()
+      return cache[key]
     end
   end,
 })
 
-return M
+return Project

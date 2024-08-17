@@ -39,7 +39,9 @@ local function maybe_trim_logfile(logfile, max_lines)
   num_lines = tonumber(string.match(num_lines, "%d+"))
   if num_lines > max_lines then
     local lines_to_delete = num_lines - max_lines
-    os.execute(string.format("sed -i '1,%dd' %s", lines_to_delete, logfile))
+    local sed_command =
+      string.format("sed -i '' '1,%dd' %s", lines_to_delete, logfile)
+    os.execute(sed_command)
   end
 end
 

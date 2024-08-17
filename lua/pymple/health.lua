@@ -42,7 +42,10 @@ local optional_dependencies = {
 
 local required_plugins = {
   { lib = "plenary", optional = false },
-  { lib = "telescope", optional = false },
+  -- nui doesn't have any top level init.lua
+  { lib = "nui.object", optional = false },
+  { lib = "dressing", optional = true },
+  { lib = "telescope", optional = true },
   { lib = "nvim-treesitter", optional = true },
   { lib = "neo-tree", optional = true },
 }

@@ -8,7 +8,8 @@
 
 
 ## SelectVenv
-- [ ] TODO
+- [ ] automatic venv discovery
+- [ ] interactive venv selection
 
 
 ## RunTestFile

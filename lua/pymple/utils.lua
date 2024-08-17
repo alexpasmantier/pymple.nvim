@@ -56,18 +56,25 @@ function M.check_plugin_installed(plugin_name)
   return lualib_installed(plugin_name)
 end
 
+local MAX_UPWARD_JUMPS = 5
+
 ---Find the root of a python project
 ---@param starting_dir string | nil: The directory to start searching from
 ---@return string | nil: The root of the python project
 local function find_project_root(starting_dir, root_markers)
   local dir = starting_dir or vim.fn.getcwd()
+  local jumps = 0
   while dir ~= "/" do
+    if jumps > MAX_UPWARD_JUMPS then
+      return nil
+    end
     for _, marker in ipairs(root_markers) do
       if vim.fn.glob(dir .. "/" .. marker) ~= "" then
         return dir
       end
     end
     dir = vim.fn.fnamemodify(dir, ":h")
+    jumps = jumps + 1
   end
   return nil
 end
@@ -339,7 +346,7 @@ M.map = map
 ---@return string: The relative file path
 local make_relative_to = function(file, root)
   ---@type Path
-  local f = Path:new(file)
+  local f = Path:new(vim.fn.fnamemodify(file, ":p"))
   local r = Path:new(root)
   local rel_f = f:make_relative(r:absolute())
   return rel_f
@@ -377,6 +384,9 @@ M.make_paths_absolute = make_paths_absolute
 function M.split_string(inputstr, sep)
   if sep == nil then
     sep = "%s"
+  end
+  if sep == "" then
+    return { inputstr }
   end
   local t = {}
   for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do

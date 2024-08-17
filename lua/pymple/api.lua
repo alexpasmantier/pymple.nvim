@@ -66,9 +66,9 @@ M.add_import_for_symbol_under_cursor = function(autosave)
     log.debug("Added import for " .. symbol .. ": " .. final_import)
   else
     local longest_candidate = utils.longest_string_in_list(candidates)
-    vim.ui.select(candidates, {
-      prompt = "Select an import",
-      telescope = require("telescope.themes").get_cursor({
+    local telescope_opts = {}
+    if utils.check_plugin_installed("telescope.nvim") then
+      telescope_opts = require("telescope.themes").get_cursor({
         layout_config = {
           width = #longest_candidate + TELESCOPE_WIDTH_PADDING,
           height = math.max(
@@ -79,7 +79,11 @@ M.add_import_for_symbol_under_cursor = function(autosave)
             )
           ),
         },
-      }),
+      })
+    end
+    vim.ui.select(candidates, {
+      prompt = "Select an import",
+      telescope = telescope_opts,
     }, function(selected)
       if selected then
         local final_import = selected

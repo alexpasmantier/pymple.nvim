@@ -71,6 +71,12 @@
 
 local utils = require("pymple.utils")
 
+---@class config
+---@field user_config Config
+---@field HL_GROUPS HlGroups
+---@field default_config Config
+---@field validate_configuration fun(): boolean
+---@field set_user_config fun(opts: Config): Config
 M = {}
 
 ---@class HlGroups
@@ -162,15 +168,15 @@ local default_config = {
 M.default_config = default_config
 
 ---@param opts Config
-function M.set_user_config(opts)
-  local user_config = vim.tbl_deep_extend("force", default_config, opts)
-  return user_config
+function M:set_user_config(opts)
+  self.user_config = vim.tbl_deep_extend("force", self.default_config, opts)
 end
 
----@param opts Config
 ---@return boolean
-function M.validate_configuration(opts)
-  if not vim.tbl_contains(opts.update_imports.filetypes, "python") then
+function M:validate_configuration()
+  if
+    not vim.tbl_contains(self.user_config.update_imports.filetypes, "python")
+  then
     utils.print_err(
       "Your configuration is invalid: `update_imports.filetypes` must at least contain the value `python`."
     )

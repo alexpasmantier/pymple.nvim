@@ -3,11 +3,11 @@ local M = {}
 local Menu = require("nui.menu")
 local Popup = require("nui.popup")
 local utils = require("pymple.utils")
-local log = require("pymple.log")
 local icons = require("nvim-web-devicons")
 local udim_utils = require("pymple.update_imports.utils")
 local udim = require("pymple.update_imports")
 local udim_jobs = require("pymple.update_imports.jobs")
+local udim_highlights = require("pymple.update_imports.highlights")
 
 -- TDOO: use user config for keymaps
 function M.get_confirmation_dialog(
@@ -62,64 +62,6 @@ function M.get_confirmation_dialog(
   return menu
 end
 
-local preview_window_ns = vim.api.nvim_create_namespace("PymplePreviewWindow")
-
--- Highlight groups:
-local preview_hl_groups = {
-  stats = vim.api.nvim_set_hl(preview_window_ns, "PymplePreviewStats", {
-    fg = "magenta",
-  }),
-  file_header = vim.api.nvim_set_hl(
-    preview_window_ns,
-    "PymplePreviewFileHeader",
-    {
-      link = "@text.title",
-    }
-  ),
-  line_count = vim.api.nvim_set_hl(
-    preview_window_ns,
-    "PymplePreviewLineCount",
-    {
-      link = "DiagnosticError",
-    }
-  ),
-  lines_before = vim.api.nvim_set_hl(
-    preview_window_ns,
-    "PymplePreviewLinesBefore",
-    {
-      link = "Removed",
-    }
-  ),
-  lines_after = vim.api.nvim_set_hl(
-    preview_window_ns,
-    "PymplePreviewLinesAfter",
-    {
-      link = "Added",
-    }
-  ),
-  separators = vim.api.nvim_set_hl(
-    preview_window_ns,
-    "PymplePreviewSeparators",
-    {
-      link = "Comment",
-    }
-  ),
-  ignored = vim.api.nvim_set_hl(preview_window_ns, "PymplePreviewIgnored", {
-    fg = "#666666",
-  }),
-}
-
----@param bufnr number
----@param line_nr number
----@param hl_group string
----@param lines string[]
-local function buf_add_lines_with_highlight(bufnr, line_nr, hl_group, lines)
-  vim.api.nvim_buf_set_lines(bufnr, line_nr, -1, false, lines)
-  for i = line_nr, line_nr + #lines - 1 do
-    vim.api.nvim_buf_add_highlight(bufnr, preview_window_ns, hl_group, i, 0, -1)
-  end
-end
-
 local function prefix_lines(lines, prefix)
   local prefixed_lines = {}
   for _, line in ipairs(lines) do
@@ -160,7 +102,7 @@ function PreviewWindow:add_result_highlights(
   -- file count
   vim.api.nvim_buf_add_highlight(
     self.bufnr,
-    preview_window_ns,
+    udim_highlights.preview_window_ns,
     "PymplePreviewLineCount",
     line_nr,
     0,
@@ -169,7 +111,7 @@ function PreviewWindow:add_result_highlights(
   -- icon
   vim.api.nvim_buf_add_highlight(
     self.bufnr,
-    preview_window_ns,
+    udim_highlights.preview_window_ns,
     icon_hl,
     line_nr,
     file_count_len + 1,
@@ -178,7 +120,7 @@ function PreviewWindow:add_result_highlights(
   -- file path
   vim.api.nvim_buf_add_highlight(
     self.bufnr,
-    preview_window_ns,
+    udim_highlights.preview_window_ns,
     "PymplePreviewFileHeader",
     line_nr,
     file_count_len + 1 + icon_len + 1,
@@ -187,7 +129,7 @@ function PreviewWindow:add_result_highlights(
   -- separator
   vim.api.nvim_buf_add_highlight(
     self.bufnr,
-    preview_window_ns,
+    udim_highlights.preview_window_ns,
     "PymplePreviewSeparators",
     line_nr + 1,
     0,
@@ -197,7 +139,7 @@ function PreviewWindow:add_result_highlights(
   for i = 0, num_lines - 1 do
     vim.api.nvim_buf_add_highlight(
       self.bufnr,
-      preview_window_ns,
+      udim_highlights.preview_window_ns,
       "PymplePreviewSeparators",
       line_nr + 2 + i,
       0,
@@ -205,7 +147,7 @@ function PreviewWindow:add_result_highlights(
     )
     vim.api.nvim_buf_add_highlight(
       self.bufnr,
-      preview_window_ns,
+      udim_highlights.preview_window_ns,
       "PymplePreviewSeparators",
       line_nr + 2 + i,
       self.size.width - 2,
@@ -213,7 +155,7 @@ function PreviewWindow:add_result_highlights(
     )
     vim.api.nvim_buf_add_highlight(
       self.bufnr,
-      preview_window_ns,
+      udim_highlights.preview_window_ns,
       "PymplePreviewLinesBefore",
       line_nr + 2 + i,
       #SEPARATORS.diff_prefix + 1,
@@ -224,7 +166,7 @@ function PreviewWindow:add_result_highlights(
   for i = 0, num_lines - 1 do
     vim.api.nvim_buf_add_highlight(
       self.bufnr,
-      preview_window_ns,
+      udim_highlights.preview_window_ns,
       "PymplePreviewSeparators",
       line_nr + 2 + num_lines + i,
       0,
@@ -232,7 +174,7 @@ function PreviewWindow:add_result_highlights(
     )
     vim.api.nvim_buf_add_highlight(
       self.bufnr,
-      preview_window_ns,
+      udim_highlights.preview_window_ns,
       "PymplePreviewSeparators",
       line_nr + 2 + num_lines + i,
       self.size.width - 2,
@@ -240,7 +182,7 @@ function PreviewWindow:add_result_highlights(
     )
     vim.api.nvim_buf_add_highlight(
       self.bufnr,
-      preview_window_ns,
+      udim_highlights.preview_window_ns,
       "PymplePreviewLinesAfter",
       line_nr + 2 + num_lines + i,
       #SEPARATORS.diff_prefix + 1,
@@ -250,7 +192,7 @@ function PreviewWindow:add_result_highlights(
   -- bottom separator
   vim.api.nvim_buf_add_highlight(
     self.bufnr,
-    preview_window_ns,
+    udim_highlights.preview_window_ns,
     "PymplePreviewSeparators",
     line_nr + 2 + num_lines * 2,
     0,
@@ -347,7 +289,7 @@ end
 function PreviewWindow:render_preview(r_channel)
   local cwd = vim.fn.getcwd()
   local w = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_hl_ns(w, preview_window_ns)
+  vim.api.nvim_win_set_hl_ns(w, udim_highlights.preview_window_ns)
   local line_count = 0
   local res_num = 1
   while true do
@@ -397,12 +339,117 @@ function PreviewWindow:resolve_hover()
   return nil
 end
 
-local MAX_PREVIEW_HEIGHT = 50
+function PreviewWindow:ignore_result()
+  local _, data = self:resolve_hover()
+  if not data then
+    return
+  end
+  local res_key = make_file_path_key(data.file_path, data.result_line_num)
+  if self.ignored_paths[res_key] then
+    self.ignored_paths[res_key] = nil
+    self:add_result_highlights(
+      data.icon_hl,
+      data.line_start,
+      data.file_count_len,
+      data.icon_len,
+      data.num_lines
+    )
+  else
+    self.ignored_paths[res_key] = true
+    vim.api.nvim_buf_clear_highlight(
+      self.bufnr,
+      udim_highlights.preview_window_ns,
+      data.line_start,
+      data.line_end
+    )
+    for i = data.line_start, data.line_end - 1 do
+      vim.api.nvim_buf_add_highlight(
+        self.bufnr,
+        udim_highlights.preview_window_ns,
+        "PymplePreviewIgnored",
+        i,
+        0,
+        -1
+      )
+    end
+  end
+end
+
+function PreviewWindow:setup_mappings()
+  local _ = self:map("n", "q", function(_)
+    self:unmount()
+  end, { noremap = true })
+  local _ = self:map("n", "<C-c>", function(_)
+    self:unmount()
+  end, { noremap = true })
+
+  local _ = self:map("n", "<CR>", function(_)
+    local ignored_keys = {}
+    for res_key, _ in pairs(self.ignored_paths) do
+      table.insert(ignored_keys, res_key)
+    end
+    self:unmount()
+    local filtered_jobs = {}
+    for _, rj in ipairs(self.r_jobs) do
+      local filtered_job = udim_jobs.filter_rjob_targets(rj, ignored_keys)
+      if #filtered_job.targets > 0 then
+        table.insert(filtered_jobs, filtered_job)
+      end
+    end
+    udim.run_jobs(filtered_jobs)
+  end, { noremap = true })
+
+  local _ = self:map("n", "<C-j>", function(_)
+    local res_index, _ = self:resolve_hover()
+    if res_index then
+      if res_index < self.num_results then
+        local next_data = self.results_map[res_index + 1]
+        vim.api.nvim_win_set_cursor(0, { next_data.line_start + 1, 0 })
+        return
+      end
+    end
+  end, { noremap = true })
+
+  local _ = self:map("n", "<C-k>", function(_)
+    local res_index, _ = self:resolve_hover()
+    if res_index then
+      if res_index > 1 then
+        local prev_data = self.results_map[res_index - 1]
+        vim.api.nvim_win_set_cursor(0, { prev_data.line_start + 1, 0 })
+        return
+      end
+    end
+  end, { noremap = true })
+
+  local _ = self:map("n", "<C-i>", function()
+    self:ignore_result()
+  end, { noremap = true })
+
+  local _ = self:map("n", "dd", function()
+    self:ignore_result()
+  end, { noremap = true })
+end
+
+local function get_editor_size()
+  local editor_width = vim.api.nvim_get_option("columns")
+  local editor_height = vim.api.nvim_get_option("lines")
+  return {
+    width = editor_width,
+    height = editor_height,
+  }
+end
+
+local PREVIEW_WINDOW_W_OFFSET = 20
+local PREVIEW_WINDOW_H_OFFSET = 15
 
 function M.get_preview_window(r_jobs, num_results, num_files)
   -- maybe inject these
-  local height = math.min(5 * num_results + 2, MAX_PREVIEW_HEIGHT)
-  local width = 120
+  local editor_size = get_editor_size()
+  local height = math.min(
+    5 * num_results + 2,
+    editor_size.height - 2 * PREVIEW_WINDOW_H_OFFSET
+  )
+  local width = math.min(120, editor_size.width - 2 * PREVIEW_WINDOW_W_OFFSET)
   local preview_window = PreviewWindow({
     enter = true,
     focusable = true,
@@ -420,14 +467,15 @@ function M.get_preview_window(r_jobs, num_results, num_files)
           num_results,
           num_files
         ),
-        top_align = "right",
-        bottom = "[C-j/k]: Next/Previous result / [Enter]: Apply changes / [i]: Toggle ignore result / [q]: Cancel",
+        top_align = "center",
+        bottom = "[C-j/C-k]: Next/Previous result / [Enter]: Apply changes / [C-i/dd]: Toggle ignore result / [q]: Cancel",
+        bottom_align = "center",
       },
       padding = {
-        top = 1,
-        bottom = 1,
-        left = 1,
-        right = 1,
+        top = 2,
+        bottom = 2,
+        left = 2,
+        right = 2,
       },
     },
     buf_options = {
@@ -443,85 +491,9 @@ function M.get_preview_window(r_jobs, num_results, num_files)
   preview_window.results_map = {}
   preview_window.ignored_paths = {}
 
-  local _ = preview_window:map("n", "q", function(bufnr)
-    preview_window:unmount()
-  end, { noremap = true })
-  local _ = preview_window:map("n", "<C-c>", function(bufnr)
-    preview_window:unmount()
-  end, { noremap = true })
+  preview_window:setup_mappings()
 
-  local _ = preview_window:map("n", "<CR>", function(bufnr)
-    local ignored_keys = {}
-    for res_key, _ in pairs(preview_window.ignored_paths) do
-      table.insert(ignored_keys, res_key)
-    end
-    preview_window:unmount()
-    local filtered_jobs = {}
-    for _, rj in ipairs(r_jobs) do
-      log.debug("initial job: " .. #rj.targets .. " targets")
-      local filtered_job = udim_jobs.filter_rjob_targets(rj, ignored_keys)
-      log.debug("Filtered job: " .. #filtered_job.targets .. " targets")
-      if #filtered_job.targets > 0 then
-        table.insert(filtered_jobs, filtered_job)
-      end
-    end
-    udim.run_jobs(filtered_jobs)
-  end, { noremap = true })
-
-  local _ = preview_window:map("n", "<C-j>", function(_)
-    local res_index, _ = preview_window:resolve_hover()
-    if res_index then
-      if res_index < preview_window.num_results then
-        local next_data = preview_window.results_map[res_index + 1]
-        vim.api.nvim_win_set_cursor(0, { next_data.line_start + 1, 0 })
-        return
-      end
-    end
-  end, { noremap = true })
-
-  local _ = preview_window:map("n", "<C-k>", function(_)
-    local res_index, _ = preview_window:resolve_hover()
-    if res_index then
-      if res_index > 1 then
-        local prev_data = preview_window.results_map[res_index - 1]
-        vim.api.nvim_win_set_cursor(0, { prev_data.line_start + 1, 0 })
-        return
-      end
-    end
-  end, { noremap = true })
-
-  local _ = preview_window:map("n", "<C-i>", function(_)
-    local res_index, data = preview_window:resolve_hover()
-    local res_key = make_file_path_key(data.file_path, data.result_line_num)
-    if preview_window.ignored_paths[res_key] then
-      preview_window.ignored_paths[res_key] = nil
-      preview_window:add_result_highlights(
-        data.icon_hl,
-        data.line_start,
-        data.file_count_len,
-        data.icon_len,
-        data.num_lines
-      )
-    else
-      preview_window.ignored_paths[res_key] = true
-      vim.api.nvim_buf_clear_highlight(
-        preview_window.bufnr,
-        preview_window_ns,
-        data.line_start,
-        data.line_end
-      )
-      for i = data.line_start, data.line_end - 1 do
-        vim.api.nvim_buf_add_highlight(
-          preview_window.bufnr,
-          preview_window_ns,
-          "PymplePreviewIgnored",
-          i,
-          0,
-          -1
-        )
-      end
-    end
-  end, { noremap = true })
+  udim_highlights.setup()
 
   -- unmount the popup when leaving the buffer
   preview_window:on("BufLeave", function()

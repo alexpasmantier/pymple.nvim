@@ -19,13 +19,16 @@ describe("make_gg_args", function()
 
   it("std", function()
     local result = jobs.make_gg_args("foo.bar.baz", { "python", "md" }, false)
-    assert.are.same("--json -t python -t md 'foo\\.bar\\.baz\\b' .", result)
+    assert.are.same(
+      "--json -t python -t md '[^\\.]\\bfoo\\.bar\\.baz\\b' .",
+      result
+    )
   end)
 end)
 
 describe("make_sed_patterns", function()
   it("std", function()
-    local result = jobs.make_sed_patterns("foo.bar.baz", "oof.rab.zab")
+    local result = jobs.make_sed_patterns("foo.bar.baz", "oof.rab.zab", false)
     assert.are.same({ "s/foo\\.bar\\.baz/oof\\.rab\\.zab/" }, result)
   end)
 
@@ -61,7 +64,7 @@ describe("replace_job", function()
 
   it("new_missing_targets", function()
     local sed_patterns = { "s/foo/bar/" }
-    local rjob = jobs.ReplaceJob.new(sed_patterns)
+    local rjob = jobs.ReplaceJob.new(sed_patterns, {})
     assert.are.same(sed_patterns, rjob.sed_patterns)
     assert.are.same({}, rjob.targets)
   end)
@@ -144,8 +147,7 @@ describe("replace_job", function()
       },
     }
     local rjob = jobs.ReplaceJob.new(sed_patterns, gg_results)
-    local futures = rjob:run_on_files()
-    futures[1]:wait()
+    rjob:run_on_files()
     local handle = assert(io.popen("cat " .. fixture_file_path))
     local result = assert(handle:read("*a"))
     handle:close()
@@ -177,6 +179,7 @@ describe("replace_job", function()
         file_path = "some_file.txt",
         line_before = "foo bar baz\n",
         line_after = "foo rab baz\n",
+        line_num = 1,
       },
     }, results)
   end)
@@ -207,6 +210,7 @@ describe("replace_job", function()
         file_path = "some_file.txt",
         line_before = "foo bar baz\n",
         line_after = "oof rab baz\n",
+        line_num = 1,
       },
     }, results)
   end)
@@ -245,11 +249,13 @@ describe("replace_job", function()
         file_path = "some_file.txt",
         line_before = "foo bar baz\n",
         line_after = "foo rab baz\n",
+        line_num = 1,
       },
       {
         file_path = "some_file.txt",
         line_before = "oof bar zab\n",
         line_after = "oof rab zab\n",
+        line_num = 2,
       },
     }, results)
   end)
