@@ -91,16 +91,64 @@ config = {
 }
 ```
 
+config                                                                *config*
+
+
+    Fields: ~
+        {user_config}    (Config)
+        {HL_GROUPS}      (HlGroups)
+        {default_config} (Config)
+
+
+HlGroups                                                            *HlGroups*
+
+
+    Fields: ~
+        {Error}   (string)
+        {Warning} (string)
+        {More}    (string)
+        {Mode}    (string)
+
+
+Keymaps                                                              *Keymaps*
+
+
+
+UpdateImportsOptions                                    *UpdateImportsOptions*
+
+
+    Fields: ~
+        {filetypes} (string[])
+
+
+LoggingOptions                                                *LoggingOptions*
+
+
+
+PythonOptions                                                  *PythonOptions*
+
+
+    Fields: ~
+        {virtual_env_names} (string[])
+        {root_markers}      (string[])
+
+
+AddImportToBufOptions                                  *AddImportToBufOptions*
+
+
+    Fields: ~
+        {autosave} (boolean)
+
+
 Config                                                                *Config*
 
 
     Fields: ~
-        {keymaps}              (Keymaps)
-        {create_user_commands} (UserCommandOptions)
-        {update_imports}       (UpdateImportsOptions)
-        {logging}              (LoggingOptions)
-        {python}               (PythonOptions)
-        {add_import_to_buf}    (AddImportToBufOptions)
+        {keymaps}           (Keymaps)
+        {update_imports}    (UpdateImportsOptions)
+        {logging}           (LoggingOptions)
+        {python}            (PythonOptions)
+        {add_import_to_buf} (AddImportToBufOptions)
 
 
 M.HL_GROUPS()                                                  *M.HL_GROUPS()*
@@ -109,6 +157,13 @@ M.HL_GROUPS()                                                  *M.HL_GROUPS()*
 
 M.default_config()                                        *M.default_config()*
 
+
+
+M:validate_configuration()                        *M:validate_configuration()*
+
+
+    Return: ~
+        boolean
 
 
 
