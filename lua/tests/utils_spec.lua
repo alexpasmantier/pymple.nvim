@@ -4,9 +4,26 @@ local cwd = vim.fn.getcwd()
 local mock = require("luassert.mock")
 
 describe("find_project_root", function()
-  it("std", function()
+  it("pythonpath", function()
+    mock(os, "getenv", function()
+      return "/some/path"
+    end)
+    local result = utils.find_project_root(nil, {})
+    assert.equals("/some/path", result)
+    mock.revert(os)
+  end)
+
+  it("no pythonpath and src", function()
     local result = utils.find_project_root(
-      FIXTURES_PATH .. "/project/src",
+      FIXTURES_PATH .. "/project_with_src/src",
+      { "pyproject.toml" }
+    )
+    assert.equals(FIXTURES_PATH .. "/project_with_src/src", result)
+  end)
+
+  it("no pythonpath and no src", function()
+    local result = utils.find_project_root(
+      FIXTURES_PATH .. "/project/module/__init__.py",
       { "pyproject.toml" }
     )
     assert.equals(FIXTURES_PATH .. "/project", result)
@@ -217,7 +234,6 @@ describe("get_virtual_environment", function()
       .. "/virtual_environments/present"
     local result = utils.get_virtual_environment(working_dir, { ".venv" })
     assert.equals(working_dir .. "/.venv", result)
-    mock.revert(vim.fn)
   end)
 
   it("no venv", function()

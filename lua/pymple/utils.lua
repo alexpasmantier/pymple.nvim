@@ -62,14 +62,19 @@ local MAX_UPWARD_JUMPS = 5
 ---@param starting_dir string | nil: The directory to start searching from
 ---@return string | nil: The root of the python project
 local function find_project_root(starting_dir, root_markers)
+  local pythonpath = os.getenv("PYTHONPATH")
+  if pythonpath then
+    return pythonpath
+  end
+
   local dir = starting_dir or vim.fn.getcwd()
   local jumps = 0
-  while dir ~= "/" do
-    if jumps > MAX_UPWARD_JUMPS then
-      return nil
-    end
+  while dir ~= "/" and jumps <= MAX_UPWARD_JUMPS do
     for _, marker in ipairs(root_markers) do
       if vim.fn.glob(dir .. "/" .. marker) ~= "" then
+        if vim.fn.glob(dir .. "/src") ~= "" then
+          dir = dir .. "/src"
+        end
         return dir
       end
     end
