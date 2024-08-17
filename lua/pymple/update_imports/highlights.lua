@@ -10,6 +10,7 @@ local function get_existing_highlights()
   highlights["Removed"] = vim.api.nvim_get_hl(0, { name = "Removed" })
   highlights["LineNr"] = vim.api.nvim_get_hl(0, { name = "LineNr" })
   highlights["CursorLineNr"] = vim.api.nvim_get_hl(0, { name = "CursorLineNr" })
+  highlights["Function"] = vim.api.nvim_get_hl(0, { name = "Function" })
   return highlights
 end
 
@@ -43,6 +44,11 @@ M.setup = function()
   vim.api.nvim_set_hl(preview_window_ns, "PymplePreviewIgnored", {
     fg = existing_highlights["LineNr"].fg,
     bg = existing_highlights["LineNr"].bg,
+  })
+  vim.api.nvim_set_hl(preview_window_ns, "PymplePreviewDefaultIcon", {
+    fg = existing_highlights["Function"].fg,
+    bg = existing_highlights["Function"].bg,
+    bold = true,
   })
 end
 

@@ -26,18 +26,6 @@ end
 
 M.count_imports_in_rjobs = count_imports_in_rjobs
 
--- ---@param job ReplaceJob
--- ---@return string[]
--- local get_files_from_rjob = function(job)
---   local files = {}
---   for _, target in ipairs(job.targets) do
---     table.insert(files, target.path)
---   end
---   return files
--- end
---
--- M.get_files_from_rjob = get_files_from_rjob
-
 ---@param jobs ReplaceJob[]
 ---@return string[]
 local get_files_from_rjobs = function(jobs)

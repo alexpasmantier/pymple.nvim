@@ -227,7 +227,6 @@ function PreviewWindow:render_filepath(
       .. string.rep(SEPARATORS.line, self.size.width - 2)
       .. SEPARATORS.above_suffix,
   })
-  -- self:add_result_highlights(icon_hl, line_count, #file_count, #icon)
   return line_count + 2
 end
 
@@ -245,9 +244,12 @@ function PreviewWindow:render_bottom_separator(line_count)
   return line_count + 1
 end
 
+local DEFAULT_FILE_ICON = ""
+local DEFAULT_FILE_ICON_HL = "PymplePreviewDefaultIcon"
+
 function PreviewWindow:render_result(result, line_count, res_num)
   local line_start = line_count
-  local icon, icon_hl = " ", ""
+  local icon, icon_hl = DEFAULT_FILE_ICON, DEFAULT_FILE_ICON_HL
   if icons then
     icon, icon_hl = icons.get_icon(
       result.file_path,
