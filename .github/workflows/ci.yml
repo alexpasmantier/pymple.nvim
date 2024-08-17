@@ -39,6 +39,7 @@ jobs:
           ${{ matrix.install-cargo }}
           ${{ matrix.install-gg }}
           gg --version
+          ${{ matrix.install-sed }}
       - name: Run tests
         run: |
           cd pymple.nvim
