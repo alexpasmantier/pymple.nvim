@@ -1,4 +1,4 @@
-*pymple.txt*    pymple.nvim Help File
+*pymple.txt*
 ================================================================================
 NVIM                                                               *pymple.nvim*
 
@@ -200,90 +200,6 @@ M.update_imports({source}, {destination}, {opts})         *M.update_imports()*
                                               file/dir (after renaming/moving)
         {opts}        (UpdateImportsOptions)  Options for the update imports
                                               operation
-
-
-
-================================================================================
-JOBS                                                               *pymple.jobs*
-
-Pymple's jobs module exposes functions that run jobs in the background. These
-will typically be used for tasks like searching for import candidates or
-updating imports in the workspace using `gg` and `sed`.
-
-GGJsonMatch                                                      *GGJsonMatch*
-
-
-    Fields: ~
-        {m_start} (number)
-        {m_end}   (number)
-
-
-GGJsonSearchResult                                        *GGJsonSearchResult*
-
-
-    Fields: ~
-        {line_number} (number)
-        {line}        (string)
-        {line_start}  (number)
-        {line_end}    (number)
-        {matches}     (GGJsonMatch[])
-
-
-GGJsonResult                                                    *GGJsonResult*
-
-
-    Fields: ~
-        {path}    (string)
-        {results} (GGJsonSearchResult[])
-
-
-M.sed({pattern}, {file_path}, {range})                               *M.sed()*
-    Runs a sed command
-
-
-    Parameters: ~
-        {pattern}   (string)    The pattern to pass to sed
-        {file_path} (string)    The path to the file to run the sed command on
-        {range}     (number[])  The range of lines to run the sed command on
-
-    Return: ~
-        Job: The job that was started
-
-
-M.gg({args})                                                          *M.gg()*
-    Runs a gg job and returns the results
-
-
-    Parameters: ~
-        {args} (string)  Arguments to pass to the `gg` command
-
-    Return: ~
-        GGJsonResult[]: The results of the gg job
-
-
-M.find_import_candidates_in_workspace({args}) *M.find_import_candidates_in_workspace()*
-    Finds import candidates in workspace
-
-
-    Parameters: ~
-        {args} (string[])  Arguments to pass to the `gg` command
-
-    Return: ~
-        string[]: The import candidates
-
-
-M.find_import_candidates_in_venv({args}, {site_packages_location}) *M.find_import_candidates_in_venv()*
-    Finds import candidates in venv
-
-
-    Parameters: ~
-        {args}                   (string[])  Arguments to pass to the `gg`
-                                             command
-        {site_packages_location} (string)    The location of the site packages
-                                             directory
-
-    Return: ~
-        string[]: The import candidates
 
 
 
