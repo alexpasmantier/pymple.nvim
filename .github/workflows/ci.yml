@@ -7,14 +7,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-14]
         rev: [v0.10.0]
         include:
           - os: ubuntu-22.04
             install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y
             install-gg: cargo install grip-grab
             install-sed: sudo apt-get install -y sed
-          - os: macos-12
+          - os: macos-14
             install-cargo: curl -sSf https://sh.rustup.rs | sh -s -- -y
             install-gg: cargo install grip-grab
             install-sed: brew install gnu-sed
