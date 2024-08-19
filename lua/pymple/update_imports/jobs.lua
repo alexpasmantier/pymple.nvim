@@ -123,7 +123,6 @@ end
 
 ---Runs the ReplaceJob on the target files
 function ReplaceJob:run_on_files()
-  -- local futures = {}
   for _, t in ipairs(self.targets) do
     for _, sr in ipairs(t.results) do
       async.run(function()
