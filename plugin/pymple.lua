@@ -10,7 +10,7 @@ for _, binaries in ipairs(health.required_binaries) do
         "Binary "
           .. p.name
           .. " is not installed. Please install it manually to use pymple.nvim "
-          .. "or run `require('pymple').install()`. For more information, see "
+          .. "or run `:PympleBuild`. For more information, see "
           .. p.url
       )
     end
