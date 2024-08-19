@@ -48,11 +48,6 @@ end
 ---@param config LoggingOptions: The configuration for the logger
 log.new = function(config, standalone)
   local outfile = config.file.path
-    or string.format(
-      "%s/%s.vlog",
-      vim.api.nvim_call_function("stdpath", { "data" }),
-      PLUGIN_NAME
-    )
 
   if config.file.enabled then
     maybe_trim_logfile(outfile, config.file.max_lines)

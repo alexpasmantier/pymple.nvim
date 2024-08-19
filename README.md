@@ -14,12 +14,6 @@ https://github.com/user-attachments/assets/f98fe92f-8208-4a05-9063-5bb76256425b
 
 
 
-## ⚡️ Requirements
-- the [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) lua package
-- the [grip-grab](https://github.com/alexpasmantier/grip-grab) rust search utility (>= 0.2.19)
-- a working version of [sed](https://www.gnu.org/software/sed/) on Linux or `gsed` (`brew install gnu-sed`) on
-  MacOS
-
 ## 📦 Installation
 ### Using Lazy
 ```lua
@@ -33,6 +27,7 @@ return {
       "stevearc/dressing.nvim",
       "nvim-tree/nvim-web-devicons",
     },
+    build = ":PympleBuild",
     config = function()
       require("pymple").setup()
     end,
@@ -50,6 +45,7 @@ use {
     "stevearc/dressing.nvim",
     "nvim-tree/nvim-web-devicons",
   },
+  run = ":PympleBuild",
   config = function()
     require("pymple").setup()
   end,
