@@ -28,9 +28,7 @@ local function setup_add_import()
   vim.api.nvim_create_user_command(
     "PympleAddImportForSymbolUnderCursor",
     function(_)
-      require("pymple.api").add_import_for_symbol_under_cursor(
-        config.user_config.add_import_to_buf.autosave
-      )
+      require("pymple.api").add_import_for_symbol_under_cursor()
     end,
     {
       desc = [[Resolves import for symbol under cursor. This will
@@ -41,9 +39,17 @@ local function setup_add_import()
   log.debug("Created PympleAddImportForSymbolUnderCursor user command")
 end
 
+local function setup_build()
+  vim.api.nvim_create_user_command("PympleBuild", function(_)
+    require("pymple.build").build()
+  end, { desc = "Installs all dependencies needed to run Pymple" })
+  log.debug("Created PympleBuild user command")
+end
+
 function M.setup()
   setup_update_imports()
   setup_add_import()
+  setup_build()
 end
 
 return M

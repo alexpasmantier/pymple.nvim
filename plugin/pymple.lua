@@ -1,12 +1,6 @@
 local utils = require("pymple.utils")
 local health = require("pymple.health")
 
-local function handle_error(err)
-  -- Extract the actual error message without the traceback
-  local error_message = err:match(":%d+: (.+)")
-  utils.print_err(error_message)
-end
-
 for _, binaries in ipairs(health.required_binaries) do
   for _, p in ipairs(binaries.package) do
     local installed, version = health.check_binary_installed(p)
@@ -15,8 +9,9 @@ for _, binaries in ipairs(health.required_binaries) do
       utils.print_err(
         "Binary "
           .. p.name
-          .. " is not installed. Please install it to use pymple.nvim. For more information, see "
-          .. p.help
+          .. " is not installed. Please install it manually to use pymple.nvim "
+          .. "or run `require('pymple').install()`. For more information, see "
+          .. p.url
       )
     end
 
@@ -38,7 +33,7 @@ for _, binaries in ipairs(health.required_binaries) do
           version,
           p.min_version,
           p.max_version,
-          p.help
+          p.url
         )
       )
     end
@@ -49,12 +44,12 @@ local required_plugins = {
   {
     name = "plenary",
     importable_name = "plenary",
-    help = "https://github.com/nvim-lua/plenary.nvim",
+    url = "https://github.com/nvim-lua/plenary.nvim",
   },
   {
     name = "nui",
     importable_name = "nui.object",
-    help = "https://github.com/MunifTanjim/nui.nvim",
+    url = "https://github.com/MunifTanjim/nui.nvim",
   },
 }
 
@@ -64,7 +59,7 @@ for _, plugin in ipairs(required_plugins) do
       "Plugin "
         .. plugin.name
         .. " is not installed. Please install it to use pymple.nvim. For more information, see "
-        .. plugin.help
+        .. plugin.url
     )
   end
 end

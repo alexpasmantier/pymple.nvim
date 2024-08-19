@@ -62,6 +62,11 @@ function M.setup(opts)
   log.debug("Pymple setup complete")
 end
 
+function M.install()
+  log.info("Installing pymple.nvim dependencies...")
+  require("pymple.build").build()
+end
+
 setmetatable(M, {
   __index = function(_, k)
     return require("pymple.api")[k]

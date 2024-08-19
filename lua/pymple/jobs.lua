@@ -12,11 +12,9 @@ local utils = require("pymple.utils")
 local log = require("pymple.log")
 local fs = require("pymple.fs")
 
-local os_name = vim.loop.os_uname().sysname
-
 local sed_binary = "sed"
 local sed_inplace_args = "-i"
-if os_name == "Darwin" then
+if utils.OS_NAME == "Darwin" then
   sed_binary = "gsed"
 end
 

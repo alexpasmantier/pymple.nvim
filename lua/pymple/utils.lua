@@ -15,6 +15,15 @@ function M.async_refresh_buffers(hang_time)
   end, hang_time or DEFAULT_HANG_TIME)
 end
 
+---gets the current operating system name
+---@return string
+local function get_os_name()
+  return vim.loop.os_uname().sysname
+end
+
+M.get_os_name = get_os_name
+M.OS_NAME = get_os_name()
+
 ---gets the $SHELL env var
 ---@return string?
 function M.get_user_shell()
