@@ -21,7 +21,15 @@ local subscribe_to_neotree_events = function(events, opts)
   })
 end
 
--- TODO: integrate with other file tree plugins (nvim-tree, oil, etc.)
+local subscribe_to_nvimtree_events = function(nvimtree_api, opts)
+  local Event = nvimtree_api.events.Event
+
+  nvimtree_api.events.subscribe(Event.NodeRenamed, function(data)
+    api.update_imports(data.old_name, data.new_name, opts)
+  end)
+end
+
+-- TODO: integrate with other file tree plugins (oil, etc.)
 
 M.setup = function()
   local neotree_installed, events = pcall(require, "neo-tree.events")
@@ -30,6 +38,17 @@ M.setup = function()
       "Found neo-tree installation, hooking up FILE_MOVED and FILE_RENAMED events"
     )
     subscribe_to_neotree_events(events, config.user_config.update_imports)
+  end
+
+  local nvimtree_installed, nvimtree_api = pcall(require, "nvim-tree.api")
+  if nvimtree_installed then
+    log.info(
+      "Found nvim-tree installation, hooking up FILE_MOVED and FILE_RENAMED events"
+    )
+    subscribe_to_nvimtree_events(
+      nvimtree_api,
+      config.user_config.update_imports
+    )
   end
 end
 
