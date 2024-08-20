@@ -1,5 +1,5 @@
 # 🖍️ pymple.nvim
-All your missing Python IDE features for Neovim.
+This plugin adds missing Python IDE features for Neovim such as automatic import refactoring on module/package rename, import resolution code actions, venv selection etc.
 ## TL;DR
 **Automatic refactoring of workspace imports on file move/rename**
 
@@ -22,7 +22,7 @@ return {
     "alexpasmantier/pymple.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim"
+      "MunifTanjim/nui.nvim",
       -- optional (nicer ui)
       "stevearc/dressing.nvim",
       "nvim-tree/nvim-web-devicons",
@@ -40,7 +40,7 @@ use {
   "alexpasmantier/pymple.nvim",
   requires = {
     "nvim-lua/plenary.nvim",
-    "MunifTanjim/nui.nvim"
+    "MunifTanjim/nui.nvim",
     -- optional (nicer ui)
     "stevearc/dressing.nvim",
     "nvim-tree/nvim-web-devicons",
