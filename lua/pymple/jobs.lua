@@ -67,6 +67,10 @@ function M.sed(pattern, file_path, range)
   return job
 end
 
+---Runs a sed command on multiple patterns
+---@param patterns string[]: The patterns to pass to sed
+---@param file_path string: The path to the file to run the sed command on
+---@param range number[]: The range of lines to run the sed command on
 function M.multi_sed(patterns, file_path, range)
   local ranged_patterns = {}
   for _, pattern in ipairs(patterns) do
@@ -114,55 +118,6 @@ function M.gg(args)
   end
   log.debug(#gg_results .. " results found")
   return gg_results
-end
-
----Finds import candidates in workspace
----@param args string[]: Arguments to pass to the `gg` command
----@return string[]: The import candidates
-function M.find_import_candidates_in_workspace(args)
-  local candidates = {}
-  local gg_command = "gg " .. table.concat(args, " ")
-  log.debug("GG command: " .. gg_command)
-  local job = Job:new({
-    command = utils.SHELL,
-    args = { "-c", gg_command },
-    on_exit = function(job, _)
-      local results = job:result()
-      if #results ~= 0 then
-        for _, result in ipairs(results) do
-          table.insert(candidates, result)
-        end
-      end
-    end,
-  })
-  job:sync()
-  return candidates
-end
-
----Finds import candidates in venv
----@param args string[]: Arguments to pass to the `gg` command
----@param site_packages_location string: The location of the site packages directory
----@return string[]: The import candidates
-function M.find_import_candidates_in_venv(args, site_packages_location)
-  local candidates = {}
-  local prefix = site_packages_location .. "/"
-  local job = Job:new({
-    command = utils.SHELL,
-    args = { "-c", "gg " .. table.concat(args, " ") },
-    on_exit = function(job, _)
-      local results = job:result()
-      if #results ~= 0 then
-        for _, result in ipairs(results) do
-          local result = (result:sub(0, #prefix) == prefix)
-              and result:sub(#prefix + 1)
-            or result
-          table.insert(candidates, result)
-        end
-      end
-    end,
-  })
-  job:sync()
-  return candidates
 end
 
 return M

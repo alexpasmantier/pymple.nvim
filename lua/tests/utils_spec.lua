@@ -398,3 +398,16 @@ describe("shorten_path", function()
     assert.equals("", result)
   end)
 end)
+
+describe("get_python_sys_paths", function()
+  it("std", function()
+    local e = function(_)
+      return "['', '/Users/someone/.pyenv/versions/3.11.2/lib/python311.zip', '/Users/someone/.pyenv/versions/3.11.2/lib/python3.11', '/Users/someone/.pyenv/versions/3.11.2/lib/python3.11/lib-dynload', '/Users/someone/.pyenv/versions/3.11.2/lib/python3.11/site-packages']"
+    end
+    local result = utils.get_python_sys_paths(e)
+    assert.same({
+      "/Users/someone/.pyenv/versions/3.11.2/lib/python3.11",
+      "/Users/someone/.pyenv/versions/3.11.2/lib/python3.11/site-packages",
+    }, result)
+  end)
+end)

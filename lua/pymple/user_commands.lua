@@ -6,9 +6,9 @@ local log = require("pymple.log")
 local M = {}
 
 local function setup_update_imports()
-  vim.api.nvim_create_user_command("UpdatePythonImports", function(args)
+  vim.api.nvim_create_user_command("PympleUpdateImports", function(args)
     if #args.fargs < 2 then
-      print_err("Usage: UpdatePythonImports <source> <destination>")
+      print_err("Usage: PympleUpdateImports <source> <destination>")
       return
     end
     api.update_imports(
@@ -21,22 +21,18 @@ local function setup_update_imports()
     `destination`]],
     nargs = "+",
   })
-  log.debug("Created UpdatePythonImports user command")
+  log.debug("Created PympleUpdateImports user command")
 end
 
 local function setup_add_import()
-  vim.api.nvim_create_user_command(
-    "PympleAddImportForSymbolUnderCursor",
-    function(_)
-      require("pymple.api").add_import_for_symbol_under_cursor()
-    end,
-    {
-      desc = [[Resolves import for symbol under cursor. This will
+  vim.api.nvim_create_user_command("PympleResolveImport", function(_)
+    require("pymple.api").resolve_import_under_cursor()
+  end, {
+    desc = [[Resolves import for symbol under cursor. This will
       automatically find and add the corresponding import to the top of the
       file (below any existing doctsring)]],
-    }
-  )
-  log.debug("Created PympleAddImportForSymbolUnderCursor user command")
+  })
+  log.debug("Created PympleResolveImport user command")
 end
 
 local function setup_build()
