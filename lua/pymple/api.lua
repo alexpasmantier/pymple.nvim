@@ -11,7 +11,7 @@ local resolve_imports = require("pymple.resolve_imports")
 local utils = require("pymple.utils")
 local print_err = utils.print_err
 local log = require("pymple.log")
-local TELESCOPE_WIDTH_PADDING = 5
+local TELESCOPE_WIDTH_PADDING = 10
 local TELESCOPE_HEIGHT_PADDING = 5
 local TELESCOPE_MIN_HEIGHT = 8
 local TELESCOPE_MAX_HEIGHT = 20
@@ -27,7 +27,11 @@ local M = {}
 ---Resolves import for symbol under cursor.
 ---This will automatically find and add the corresponding import to the top of
 ---the file (below any existing doctsring)
-M.add_import_for_symbol_under_cursor = function()
+M.resolve_import_under_cursor = function()
+  if not utils.is_python_file(vim.fn.expand("%")) then
+    print_err("Not a python file")
+    return
+  end
   local symbol = vim.fn.expand("<cword>")
   if symbol == "" then
     print_err("No symbol found under cursor.")
@@ -75,7 +79,7 @@ M.add_import_for_symbol_under_cursor = function()
     if utils.check_plugin_installed("telescope") then
       telescope_opts = require("telescope.themes").get_cursor({
         layout_config = {
-          width = #longest_candidate + TELESCOPE_WIDTH_PADDING,
+          width = #longest_candidate + TELESCOPE_WIDTH_PADDING + #symbol + 1,
           height = math.max(
             TELESCOPE_MIN_HEIGHT,
             math.min(
@@ -88,6 +92,9 @@ M.add_import_for_symbol_under_cursor = function()
     end
     vim.ui.select(candidates, {
       prompt = "Select an import",
+      format_item = function(item)
+        return item .. string.format(".%s", symbol)
+      end,
       telescope = telescope_opts,
     }, function(selected)
       if selected then
@@ -119,7 +126,7 @@ M.update_imports = function(source, destination, opts)
       .. vim.inspect(opts.filetypes)
   )
   local r_jobs =
-    udim.prepare_jobs(source, destination, opts.filetypes, project.project_root)
+    udim.prepare_jobs(source, destination, opts.filetypes, project.root)
   if #r_jobs == 0 then
     log.info("No jobs to run.")
     return
@@ -141,7 +148,7 @@ M.update_imports = function(source, destination, opts)
         async.run(function()
           preview_window:render_preview(receiver)
         end)
-        vim.api.nvim_buf_set_option(preview_window.bufnr, "modifiable", false)
+        vim.api.nvim_buf_set_var(preview_window.bufnr, "modifiable", false)
       end
     end,
     function()

@@ -88,11 +88,11 @@ M.HL_GROUPS = {
 }
 
 ---@class Keymaps
----@field add_import_for_symbol_under_cursor {keys: string, desc: string}
+---@field resolve_import_under_cursor {keys: string, desc: string}
 
 ---@type Keymaps
 local default_keymaps = {
-  add_import_for_symbol_under_cursor = {
+  resolve_import_under_cursor = {
     keys = "<leader>li",
     desc = "Resolve import under cursor",
   },

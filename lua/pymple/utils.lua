@@ -235,17 +235,33 @@ function M.get_virtual_environment(from_path, venv_names)
   return nil
 end
 
----Get the path to the site packages directory
----@return string | nil: The path to the site packages directory
-function M.get_site_packages_location()
-  local result = vim.fn.system(
-    "python -c 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'"
-  )
-  local location = result:gsub("\n", "")
-  if vim.fn.isdirectory(location) == 1 then
-    return location
+---Get python sys paths
+---@return string[] | nil: The path to the site packages directory
+function M.get_python_sys_paths(cmd_executor)
+  cmd_executor = cmd_executor or vim.fn.system
+  local result = cmd_executor("python -c 'import sys; print(sys.path)'")
+  local paths = vim.split(result, ",")
+  local clean_paths = {}
+  for _, path in ipairs(paths) do
+    local p = path
+      :gsub("%[", "")
+      :gsub("%]", "")
+      :gsub("'", "")
+      :gsub(" ", "")
+      :gsub("\n", "")
+    if
+      p ~= ""
+      and vim.fn.fnamemodify(p, ":e") ~= "zip"
+      and vim.fn.fnamemodify(p, ":t") ~= "lib-dynload"
+    then
+      table.insert(clean_paths, p)
+    end
   end
-  return nil
+  if #clean_paths == 0 then
+    return nil
+  end
+  log.debug("Python sys paths: " .. vim.inspect(clean_paths))
+  return clean_paths
 end
 
 ---Check if a table contains a specific entry
