@@ -172,7 +172,7 @@ At the moment, the following functions are exposed:
  - `update_imports`: Update all imports in workspace after renaming `source` to
    `destination`.
 
-M.add_import_for_symbol_under_cursor() *M.add_import_for_symbol_under_cursor()*
+M.resolve_import_under_cursor()              *M.resolve_import_under_cursor()*
     Resolves import for symbol under cursor. This will automatically find and
     add the corresponding import to the top of the file (below any existing
     doctsring)
