@@ -1,3 +1,4 @@
+-- TODO: integrate with other file tree plugins (oil, etc.)
 local log = require("pymple.log")
 local api = require("pymple.api")
 local config = require("pymple.config")
@@ -28,8 +29,6 @@ local subscribe_to_nvimtree_events = function(nvimtree_api, opts)
     api.update_imports(data.old_name, data.new_name, opts)
   end)
 end
-
--- TODO: integrate with other file tree plugins (oil, etc.)
 
 M.setup = function()
   local neotree_installed, events = pcall(require, "neo-tree.events")
