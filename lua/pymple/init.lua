@@ -1,15 +1,12 @@
 ---@tag pymple.nvim
 ---@brief [[
 --- This plugin attempts to provide missing utilities when working with Python
---- inside Neovim.
+--- imports inside Neovim.
 ---
 --- These utilities include:
---- - automatic renaming of imports when renaming/moving a file or a folder
---- - shortcuts to create usual python files (`tests`, `__init__`, etc.)
+--- - automatic update of imports when renaming/moving a file or a folder
 --- - automatic symbol import resolution based on your current workspace and
 ---   installed python packages
---- - automatic and configurable creation of test files that mirror your project
----   structure
 ---@brief ]]
 
 local config = require("pymple.config")
