@@ -57,8 +57,15 @@ This plugin attempts to provide missing utilities when working with Python
 inside Neovim.
 
 The following features are currently available:
-- ✅ Automatic refactoring of workspace imports on python file/dir move/rename with available preview
-- ✅ Automatic missing import resolution for symbol under cursor (searches in workspace and installed packages)
+- ✅ Automatic refactoring of workspace imports on python file/dir move/rename.
+  - ✅ confirmation prompt
+  - ✅ preview window
+  - ✅ optionally ignore individual changes
+  - ✅ currently supports `neo-tree` and `nvim-tree`
+- ✅ Automatic missing import resolution for symbol under cursor:
+  - ✅ searches in current workspace
+  - ✅ searches in virtual environments
+  - ✅ searches in the python stdlib
 - ✅ Automatic project root discovery for python projects
 - 👷 Automatic virtual environment discovery and activation for python projects (+ manual selection feature)
 - 👷 Run tests for the current file
