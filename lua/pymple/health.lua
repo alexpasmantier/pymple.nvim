@@ -5,46 +5,32 @@ local warn = health.warn or health.report_warn
 local error = health.error or health.report_error
 local info = health.info or health.report_info
 local utils = require("pymple.utils")
-local log = require("pymple.log")
 
 local M = {}
 -- local is_win = vim.api.nvim_call_function("has", { "win32" }) == 1
 
+---@class RequiredBinary
+---@field name string
+---@field url string
+---@field optional boolean
+---@field binaries string[]
+---@field min_version string | nil
+---@field max_version string | nil
+
+---@type RequiredBinary[]
 local required_binaries = {
   {
-    functionality = "update_imports",
-    package = {
-      {
-        name = "gg",
-        url = "[alexpasmantier/grip-grab](https://github.com/alexpasmantier/grip-grab)",
-        optional = false,
-        binaries = { "gg" },
-        min_version = "0.2.22",
-      },
-    },
+    name = "gg",
+    url = "[alexpasmantier/grip-grab](https://github.com/alexpasmantier/grip-grab)",
+    optional = false,
+    binaries = { "gg" },
+    min_version = "0.2.23",
   },
   {
-    functionality = "resolve_imports",
-    package = {
-      {
-        name = "gg",
-        url = "[alexpasmantier/grip-grab](https://github.com/alexpasmantier/grip-grab)",
-        optional = false,
-        binaries = { "gg" },
-        min_version = "0.2.22",
-      },
-    },
-  },
-  {
-    functionality = "update_imports",
-    package = {
-      {
-        name = "sed",
-        url = "[https://www.gnu.org/software/sed](https://www.gnu.org/software/sed/manual/sed.html)",
-        optional = false,
-        binaries = { linux = "sed", darwin = "gsed" },
-      },
-    },
+    name = "sed",
+    url = "[https://www.gnu.org/software/sed](https://www.gnu.org/software/sed/manual/sed.html)",
+    optional = false,
+    binaries = { linux = "sed", darwin = "gsed" },
   },
 }
 
@@ -138,44 +124,42 @@ M.check = function()
   start("Checking external dependencies")
 
   for _, req_bin in pairs(required_binaries) do
-    for _, package in ipairs(req_bin.package) do
-      local installed, version = check_binary_installed(package)
-      if not installed then
-        local err_msg = ("%s: not found."):format(package.name)
-        if package.optional then
-          warn(
-            ("%s %s"):format(
-              err_msg,
-              ("Install %s for extended capabilities"):format(package.url)
-            )
+    local installed, version = check_binary_installed(req_bin)
+    if not installed then
+      local err_msg = ("%s: not found."):format(req_bin.name)
+      if req_bin.optional then
+        warn(
+          ("%s %s"):format(
+            err_msg,
+            ("Install %s for extended capabilities"):format(req_bin.url)
           )
-        else
-          error(
-            ("%s %s"):format(
-              err_msg,
-              ("Functionality `%s` will not work without %s installed."):format(
-                req_bin.functionality,
-                package.url
-              )
-            )
-          )
-        end
+        )
       else
-        version = version or "(unknown version)"
-        if
-          (package.min_version or package.max_version)
-          and version ~= "(unknown version)"
-          and not version_satisfies_constraint(version, package.min_version)
-        then
-          error(
-            ("%s: installed version %s is too old."):format(
-              package.name,
-              version
+        error(
+          ("%s %s"):format(
+            err_msg,
+            ("pymple.nvim will not work without %s installed."):format(
+              req_bin.url
             )
           )
-        else
-          ok(("%s: found %s"):format(package.name, version))
-        end
+        )
+      end
+    else
+      version = version or "(unknown version)"
+      if
+        (req_bin.min_version or req_bin.max_version)
+        and version ~= "(unknown version)"
+        and not version_satisfies_constraint(
+          version,
+          req_bin.min_version,
+          req_bin.max_version
+        )
+      then
+        error(
+          ("%s: installed version %s is too old."):format(req_bin.name, version)
+        )
+      else
+        ok(("%s: found %s"):format(req_bin.name, version))
       end
     end
   end
