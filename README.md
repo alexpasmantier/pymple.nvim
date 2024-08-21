@@ -67,6 +67,52 @@ The following features are currently available:
 - ✅ Automatic project root discovery for python projects
 - ✅ Automatic virtual environment discovery
 
+
+
+## 🚀 Usage
+### 🦀 Import updates on file move/rename
+If you're using a file explorer such as `neo-tree` or `nvim-tree`, pymple will automatically detect it and setup the appropriate hooks.  
+
+When you rename or move a file or directory, you'll be prompted with a confirmation window and be able to preview the pending changes while discarding the ones you don't want.
+
+While inside the preview window, the current mappings are defined by default:
+
+| keybinding      | action                                  |
+|-----------------|-----------------------------------------|
+| `<CR>`          |      Confirm and update the imports     |
+| `<C-k>`         |       Move to the previous change       |
+| `<C-j>`         |         Move to the next change         |
+| `<C-i>` or `dd` |              Discard change             |
+| `<C-c>` or `q`  | Cancel refactoring and close the window |
+
+https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
+
+If you're not using a file explorer, the current alternative would be to manually call `:PympleUpdateImports <source> <destination>` after the file rename operation which will bring up the confirmation window mentioned above.
+
+### 🦀 Import resolution
+By default, pymple will setup a keymap for this (`<leader>li`) which you can change in the configuration:
+```lua
+  -- automatically register the following keymaps on plugin setup
+  keymaps = {
+    -- Resolves import for symbol under cursor.
+    -- This will automatically find and add the corresponding import to
+    -- the top of the file (below any existing doctsring)
+    add_import_for_symbol_under_cursor = {
+      keys = "<leader>li", -- feel free to change this to whatever you like
+      desc = "Resolve import under cursor", -- description for the keymap
+    },
+  },
+```
+
+When inside a python buffer, with the cursor on any importable symbol, pressing the above keymap will perform the following action:
+- **if the symbol resolves to a unique import candidate:** add that import to the top of the file (after eventual docstrings) and automatically save the file to run any import sorting/formatting autocommands;
+- **if there are multiple candidates:** prompt the user to select the right one and perform step above;
+- **if there are no candidates matching the symbol:** Print a warning message to notify the user.
+
+
+https://github.com/user-attachments/assets/b1dd773e-bf1c-4d4c-9546-1b5e27d726b7
+
+
 ## ⚙️ Configuration
 Here is the default configuration:
 
@@ -127,52 +173,6 @@ default_config = {
   },
 }
 ```
-
-
-## 🚀 Usage
-### 🦀 Import updates on file move/rename
-If you're using a file explorer such as `neo-tree` or `nvim-tree`, pymple will automatically detect it and setup the appropriate hooks.  
-
-When you rename or move a file or directory, you'll be prompted with a confirmation window and be able to preview the pending changes while discarding the ones you don't want.
-
-While inside the preview window, the current mappings are defined by default:
-
-| keybinding      | action                                  |
-|-----------------|-----------------------------------------|
-| `<CR>`          |      Confirm and update the imports     |
-| `<C-k>`         |       Move to the previous change       |
-| `<C-j>`         |         Move to the next change         |
-| `<C-i>` or `dd` |              Discard change             |
-| `<C-c>` or `q`  | Cancel refactoring and close the window |
-
-https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
-
-If you're not using a file explorer, the current alternative would be to manually call `:PympleUpdateImports <source> <destination>` after the file rename operation which will bring up the confirmation window mentioned above.
-
-### 🦀 Import resolution
-By default, pymple will setup a keymap for this (`<leader>li`) which you can change in the configuration:
-```lua
-  -- automatically register the following keymaps on plugin setup
-  keymaps = {
-    -- Resolves import for symbol under cursor.
-    -- This will automatically find and add the corresponding import to
-    -- the top of the file (below any existing doctsring)
-    add_import_for_symbol_under_cursor = {
-      keys = "<leader>li", -- feel free to change this to whatever you like
-      desc = "Resolve import under cursor", -- description for the keymap
-    },
-  },
-```
-
-When inside a python buffer, with the cursor on any importable symbol, pressing the above keymap will perform the following action:
-- **if the symbol resolves to a unique import candidate:** add that import to the top of the file (after eventual docstrings) and automatically save the file to run any import sorting/formatting autocommands;
-- **if there are multiple candidates:** prompt the user to select the right one and perform step above;
-- **if there are no candidates matching the symbol:** Print a warning message to notify the user.
-
-
-https://github.com/user-attachments/assets/b1dd773e-bf1c-4d4c-9546-1b5e27d726b7
-
-
 
 
 ## 🆘 Help
