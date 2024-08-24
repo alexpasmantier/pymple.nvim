@@ -72,7 +72,7 @@ function M.prepare_jobs(source, destination, filetypes, python_root)
     if m_job then
       table.insert(replace_jobs, m_job)
     end
-  elseif utils.recursive_dir_contains_python_files(source) then
+  elseif utils.recursive_dir_contains_python_files(destination) then
     log.debug("Operating on a directory")
     local m_job = make_monolithic_imports_job(s, d, filetypes)
     if m_job then
