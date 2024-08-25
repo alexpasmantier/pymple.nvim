@@ -1,11 +1,14 @@
 # 🖍️ pymple.nvim
-This plugin adds missing common Python IDE features for Neovim when dealing with imports: automatic import updates on module/package rename and code-action-like import resolution.
-## TL;DR
-**Automatic import updates on file/dir move/rename**
+This plugin adds missing common Python IDE features for Neovim when dealing with imports: 
+- 🦀 **automatic import updates on module/package rename**
+- 🦀 **code-action-like import resolution**
+
+## tl;dr
+👉 **Automatic import updates on file/dir move/rename**
 
 https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
 
-**Code-action-like import resolution**
+👉 **Code-action-like import resolution**
 
 
 
