@@ -208,7 +208,11 @@ require("pymple").setup({
   },
 })
 ```
-If you're running a regular unix system, you'll most likely find the logs in `~/.local/share/nvim/pymple.vlog` .
+
+You can then open a buffer with the associated logs by running the following command:
+```vim
+:PympleLogs
+```
 
 *NOTE*: if you have trouble filtering through the logs, or if you just like colors, maybe [this](https://github.com/alexpasmantier/tree-sitter-vlog) might interest you.
 
