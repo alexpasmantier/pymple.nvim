@@ -42,10 +42,18 @@ local function setup_build()
   log.debug("Created PympleBuild user command")
 end
 
+local function setup_logs()
+  vim.api.nvim_create_user_command("PympleLogs", function(_)
+    vim.cmd("sp " .. config.user_config.logging.file.path)
+  end, { desc = "Toggle the Pymple log window" })
+  log.debug("Created PympleLogs user command")
+end
+
 function M.setup()
   setup_update_imports()
   setup_add_import()
   setup_build()
+  setup_logs()
 end
 
 return M
