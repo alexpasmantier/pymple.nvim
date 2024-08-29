@@ -1,5 +1,5 @@
 # 🖍️ pymple.nvim
-This plugin adds missing common Python IDE features for Neovim when dealing with imports: 
+Pymple adds missing common Python IDE features for Neovim when dealing with imports: 
 - 🦀 **automatic import updates on module/package rename**
 - 🦀 **code-action-like import resolution**
 
