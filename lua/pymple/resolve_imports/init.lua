@@ -3,6 +3,7 @@ local M = {}
 local utils = require("pymple.utils")
 local jobs = require("pymple.resolve_imports.jobs")
 local log = require("pymple.log")
+local project = require("pymple.project")
 
 -- classes, functions, and variables
 local class_pattern = [['^class\s+%s\b']]
@@ -46,7 +47,7 @@ function M.resolve_python_import(symbol, current_file_path)
 
   local import_candidates = {}
   for _, path in ipairs(candidate_paths) do
-    local _path = string.gsub(path, "^%./", "")
+    local _path = utils.make_relative_to(path, project.root)
     local import_path = utils.to_import_path(_path)
     table.insert(import_candidates, import_path)
   end
