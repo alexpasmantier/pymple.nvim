@@ -1,9 +1,9 @@
-local update_imports = require("pymple.update_imports")
-local ReplaceJob = require("pymple.update_imports.jobs").ReplaceJob
-
 local FIXTURES_PATH = "lua/tests/update_imports/fixtures"
 
 describe("udpate_imports", function()
+  local update_imports = require("pymple.update_imports")
+  local ReplaceJob = require("pymple.update_imports.jobs").ReplaceJob
+
   it("make_split_imports_job", function()
     local source = "foo.bar"
     local destination = "oof.rab"

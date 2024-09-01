@@ -1,8 +1,8 @@
-local jobs = require("pymple.jobs")
-local FIXTURES_PATH = "lua/tests/fixtures/jobs"
-local cwd = vim.fn.getcwd()
-
 describe("gg", function()
+  local jobs = require("pymple.jobs")
+  local FIXTURES_PATH = "lua/tests/fixtures/jobs"
+  local cwd = vim.fn.getcwd()
+
   it("std", function()
     local args =
       table.concat({ "--json", "-A", "foo", FIXTURES_PATH .. "/gg" }, " ")

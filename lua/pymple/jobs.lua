@@ -95,13 +95,15 @@ end
 function M.gg(args)
   local subcommand = "gg -C " .. args
   log.debug("Starting gg job: " .. subcommand)
-  local job = Job:new({
-    command = utils.SHELL,
-    args = { "-c", subcommand },
-  })
-  job:sync()
+  local job = vim.system({ utils.SHELL, "-c", subcommand }):wait()
   local gg_results = {}
-  for _, file_result in ipairs(job:result()) do
+  local result_lines = vim.split(job.stdout, "\n")
+  for i, line in ipairs(result_lines) do
+    if line == "" then
+      table.remove(result_lines, i)
+    end
+  end
+  for _, file_result in ipairs(result_lines) do
     local t = vim.json.decode(file_result)
     -- this is unfortunate but `end` is a reserved keyword in Lua
     for _, sr in ipairs(t.results) do
