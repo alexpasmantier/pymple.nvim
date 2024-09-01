@@ -89,21 +89,21 @@ function M.multi_sed(patterns, file_path, range)
   job:sync()
 end
 
-local MAX_GG_RESULTS = 5000
-
 --- Runs a gg job and returns the results
 ---@param args string: Arguments to pass to the `gg` command
 ---@return GGJsonResult[]: The results of the gg job
 function M.gg(args)
-  local subcommand = string.format("gg -C -M %s ", MAX_GG_RESULTS) .. args
+  local subcommand = "gg -C " .. args
   log.debug("Starting gg job: " .. subcommand)
-  local job = Job:new({
-    command = utils.SHELL,
-    args = { "-c", subcommand },
-  })
-  job:sync()
+  local job = vim.system({ utils.SHELL, "-c", subcommand }):wait()
   local gg_results = {}
-  for _, file_result in ipairs(job:result()) do
+  local result_lines = vim.split(job.stdout, "\n")
+  for i, line in ipairs(result_lines) do
+    if line == "" then
+      table.remove(result_lines, i)
+    end
+  end
+  for _, file_result in ipairs(result_lines) do
     local t = vim.json.decode(file_result)
     -- this is unfortunate but `end` is a reserved keyword in Lua
     for _, sr in ipairs(t.results) do
