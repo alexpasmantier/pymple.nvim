@@ -100,10 +100,10 @@ By default, pymple will setup a keymap for this (`<leader>li`) which you can cha
     -- Resolves import for symbol under cursor.
     -- This will automatically find and add the corresponding import to
     -- the top of the file (below any existing doctsring)
-    add_import_for_symbol_under_cursor = {
-      keys = "<leader>li", -- feel free to change this to whatever you like
-      desc = "Resolve import under cursor", -- description for the keymap
-    },
+    resolve_import_under_cursor = {
+      desc = "Resolve import under cursor",
+      keys = "<leader>li"  -- feel free to change this to whatever you like
+    }
   },
 ```
 
