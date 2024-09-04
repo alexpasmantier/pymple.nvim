@@ -1,4 +1,3 @@
--- TODO: integrate with other file tree plugins (oil, etc.)
 local log = require("pymple.log")
 local api = require("pymple.api")
 local config = require("pymple.config")
@@ -32,23 +31,6 @@ local setup_nvimtree_hooks = function(nvimtree_api, opts)
   end)
 end
 
---[[
-  OilActionsPost {
-  buf = 14,
-  data = {
-    actions = { {
-        dest_url = "oil:///Users/alex/code/python/data-doctrine/scripts/QAC_dataset/toto.py",
-        entry_type = "file",
-        src_url = "oil:///Users/alex/code/python/data-doctrine/scripts/QAC_dataset/utils.py",
-        type = "move"
-      } }
-  },
-  event = "User",
-  file = "OilActionsPost",
-  id = 99,
-  match = "OilActionsPost"
-}
---]]
 local setup_oil_hooks = function(opts)
   vim.api.nvim_create_autocmd("User", {
     pattern = "OilActionsPost",
