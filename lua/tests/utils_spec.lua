@@ -176,7 +176,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/no_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
+    utils.add_import_to_buffer("from foo.bar import baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[1])
@@ -193,7 +193,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/single_line_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
+    utils.add_import_to_buffer("from foo.bar import baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[3])
@@ -210,7 +210,7 @@ describe("add_import_to_current_buf", function()
         cwd .. "/" .. FIXTURES_PATH .. "/docstrings/multiline_docstring.py"
       )
     )
-    utils.add_import_to_buffer("foo.bar", "baz", buf, false)
+    utils.add_import_to_buffer("from foo.bar import baz", buf, false)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     -- lua table indexing is 1-based
     assert.equals("from foo.bar import baz", lines[6])

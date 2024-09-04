@@ -179,11 +179,10 @@ end
 M.find_docstring_end_line_number = find_docstring_end_line_number
 
 ---Adds an import to the current buffer
----@param import_path string: The import path to be added
----@param symbol string: The symbol to be imported
+---@param statement string: The statement to add
 ---@param buf number: The buffer number
 ---@param autosave boolean: Whether or not to autosave the buffer after adding the import
-function M.add_import_to_buffer(import_path, symbol, buf, autosave)
+function M.add_import_to_buffer(statement, buf, autosave)
   local docstring_height = find_docstring_end_line_number(buf)
   local insert_on_line = 0
   if docstring_height ~= 0 then
@@ -195,7 +194,7 @@ function M.add_import_to_buffer(import_path, symbol, buf, autosave)
     insert_on_line,
     insert_on_line,
     false,
-    { "from " .. import_path .. " import " .. symbol, "" }
+    { statement }
   )
   if autosave then
     vim.cmd.write()
