@@ -62,7 +62,10 @@ The following features are currently available:
   - ✅ confirmation prompt
   - ✅ preview window
   - ✅ optionally ignore individual changes
-  - ✅ currently supports `neo-tree` and `nvim-tree`
+  - currently supports:
+    - ✅ `neo-tree`
+    - ✅ `nvim-tree`
+    - ✅ `oil.nvim`
 - Automatic missing import resolution for symbol under cursor:
   - ✅ searches in current workspace
   - ✅ searches in virtual environments
