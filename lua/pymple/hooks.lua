@@ -7,7 +7,7 @@ local M = {}
 
 ---@param events table
 ---@param opts UpdateImportsOptions
-local subscribe_to_neotree_events = function(events, opts)
+local setup_neotree_hooks = function(events, opts)
   events.subscribe({
     event = events.FILE_MOVED,
     handler = function(args)
@@ -22,7 +22,9 @@ local subscribe_to_neotree_events = function(events, opts)
   })
 end
 
-local subscribe_to_nvimtree_events = function(nvimtree_api, opts)
+---@param nvimtree_api table
+---@param opts UpdateImportsOptions
+local setup_nvimtree_hooks = function(nvimtree_api, opts)
   local Event = nvimtree_api.events.Event
 
   nvimtree_api.events.subscribe(Event.NodeRenamed, function(data)
@@ -30,24 +32,59 @@ local subscribe_to_nvimtree_events = function(nvimtree_api, opts)
   end)
 end
 
+--[[
+  OilActionsPost {
+  buf = 14,
+  data = {
+    actions = { {
+        dest_url = "oil:///Users/alex/code/python/data-doctrine/scripts/QAC_dataset/toto.py",
+        entry_type = "file",
+        src_url = "oil:///Users/alex/code/python/data-doctrine/scripts/QAC_dataset/utils.py",
+        type = "move"
+      } }
+  },
+  event = "User",
+  file = "OilActionsPost",
+  id = 99,
+  match = "OilActionsPost"
+}
+--]]
+local setup_oil_hooks = function(opts)
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "OilActionsPost",
+    callback = function(args)
+      local parse_url = function(url)
+        return url:match("^.*://(.*)$")
+      end
+      local data = args.data
+      for _, action in ipairs(data.actions) do
+        if action.type == "move" then
+          local src_url = parse_url(action.src_url)
+          local dest_url = parse_url(action.dest_url)
+          api.update_imports(src_url, dest_url, opts)
+        end
+      end
+    end,
+  })
+end
+
 M.setup = function()
   local neotree_installed, events = pcall(require, "neo-tree.events")
   if neotree_installed then
-    log.info(
-      "Found neo-tree installation, hooking up FILE_MOVED and FILE_RENAMED events"
-    )
-    subscribe_to_neotree_events(events, config.user_config.update_imports)
+    log.info("Found neo-tree installation, hooking up events")
+    setup_neotree_hooks(events, config.user_config.update_imports)
   end
 
   local nvimtree_installed, nvimtree_api = pcall(require, "nvim-tree.api")
   if nvimtree_installed then
-    log.info(
-      "Found nvim-tree installation, hooking up FILE_MOVED and FILE_RENAMED events"
-    )
-    subscribe_to_nvimtree_events(
-      nvimtree_api,
-      config.user_config.update_imports
-    )
+    log.info("Found nvim-tree installation, hooking up events")
+    setup_nvimtree_hooks(nvimtree_api, config.user_config.update_imports)
+  end
+
+  local oil_installed, _ = pcall(require, "oil")
+  if oil_installed then
+    log.info("Found oil installation, hooking up events")
+    setup_oil_hooks(config.user_config.update_imports)
   end
 end
 

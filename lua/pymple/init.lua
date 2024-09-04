@@ -56,7 +56,7 @@ end
 ---@param opts Config
 function M.setup(opts)
   setup(opts)
-  log.debug("Pymple setup complete")
+  log.info("Pymple setup complete")
 end
 
 function M.install()

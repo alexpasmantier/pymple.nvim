@@ -62,7 +62,10 @@ The following features are currently available:
   - ✅ confirmation prompt
   - ✅ preview window
   - ✅ optionally ignore individual changes
-  - ✅ currently supports `neo-tree` and `nvim-tree`
+  - currently supports:
+    - ✅ `neo-tree`
+    - ✅ `nvim-tree`
+    - ✅ `oil.nvim`
 - Automatic missing import resolution for symbol under cursor:
   - ✅ searches in current workspace
   - ✅ searches in virtual environments
@@ -74,7 +77,7 @@ The following features are currently available:
 
 ## 🚀 Usage
 ### 🦀 Import updates on file move/rename
-If you're using a file explorer such as `neo-tree` or `nvim-tree`, pymple will automatically detect it and setup the appropriate hooks.  
+If you're using a file explorer such as `neo-tree`, `nvim-tree` or `oil.nvim`, pymple will automatically detect it and setup the appropriate hooks.  
 
 When you rename or move a file or directory, you'll be prompted with a confirmation window and be able to preview the pending changes while discarding the ones you don't want.
 
