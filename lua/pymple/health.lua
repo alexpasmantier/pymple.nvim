@@ -77,6 +77,21 @@ local function lualib_installed(lib_name)
   return res
 end
 
+local function compare_versions(version1, version2)
+  local version1_parts = utils.split_string(version1, ".")
+  local version2_parts = utils.split_string(version2, ".")
+  for i, part in ipairs(version1_parts) do
+    local part_num = tonumber(part)
+    local other_part = tonumber(version2_parts[i]) or 0
+    if part_num > other_part then
+      return 1
+    elseif part_num < other_part then
+      return -1
+    end
+  end
+  return 0
+end
+
 ---@param version string
 ---@param min_version string
 ---@param max_version string
@@ -86,18 +101,8 @@ local function version_satisfies_constraint(version, min_version, max_version)
   else
     min_version = min_version or "0"
     max_version = max_version or "9999"
-    local version_parts = utils.split_string(version, ".")
-    local min_version_parts = utils.split_string(min_version, ".")
-    local max_version_parts = utils.split_string(max_version, ".")
-    for i, part in ipairs(version_parts) do
-      local part_num = tonumber(part)
-      local min_part = tonumber(min_version_parts[i]) or 0
-      local max_part = tonumber(max_version_parts[i]) or 9999
-      if part_num < min_part or part_num > max_part then
-        return false
-      end
-    end
-    return true
+    return compare_versions(version, min_version) >= 0
+      and compare_versions(version, max_version) <= 0
   end
 end
 
