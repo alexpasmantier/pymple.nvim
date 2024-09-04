@@ -160,8 +160,6 @@ local default_config = {
   python = default_python_options,
 }
 
-P(default_config)
-
 ---@type Config
 M.default_config = default_config
 
