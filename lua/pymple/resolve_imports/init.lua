@@ -33,17 +33,58 @@ end
 
 M.build_symbol_regexes = build_symbol_regexes
 
+IGNORED_CANDIDATES_PREDICATES = {
+  ---@param candidate string
+  function(candidate)
+    return candidate:find("lib/python") ~= nil
+  end,
+  ---@param candidate string
+  function(candidate)
+    return candidate:find("pip/_") ~= nil
+  end,
+  ---@param candidate string
+  function(candidate)
+    return candidate:find("site-packages") ~= nil
+  end,
+  ---@param candidate string
+  function(candidate)
+    return candidate:find("_pytest") ~= nil
+  end,
+}
+
+local function filter_candidates(candidates)
+  local filtered_candidates = {}
+  for _, candidate in ipairs(candidates) do
+    local is_ignored = false
+    for _, predicate in ipairs(IGNORED_CANDIDATES_PREDICATES) do
+      if predicate(candidate) then
+        is_ignored = true
+        break
+      end
+    end
+    if not is_ignored then
+      table.insert(filtered_candidates, candidate)
+    end
+  end
+  return filtered_candidates
+end
+
 ---@param symbol string: the symbol for which to resolve an import
 ---@param current_file_path string: the path to the current file
 ---@return string[] | nil: list of candidates
 function M.resolve_python_import(symbol, current_file_path)
-  local py_sys_paths = utils.get_python_sys_paths()
+  local py_sys_paths = utils.get_python_sys_paths() or {}
+  if project.root then
+    table.insert(py_sys_paths, project.root)
+  end
+  local target_paths = utils.deduplicate_list(py_sys_paths)
   local gg_args = "-fCHGA -t pystrict -I "
     .. current_file_path
     .. " "
     .. build_symbol_regexes(symbol, IMPORTABLE_SYMBOLS_PATTERNS)
-  local candidate_paths = jobs.find_import_candidates(gg_args, py_sys_paths)
+  local candidate_paths = jobs.find_import_candidates(gg_args, target_paths)
   log.debug("Candidates: " .. vim.inspect(candidate_paths))
+  candidate_paths = filter_candidates(candidate_paths)
 
   local import_candidates = {}
   for _, path in ipairs(candidate_paths) do

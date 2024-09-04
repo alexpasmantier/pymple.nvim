@@ -67,14 +67,20 @@ M.resolve_import_under_cursor = function()
   elseif #candidates == 1 then
     local final_import = candidates[1]
     utils.add_import_to_buffer(
-      final_import,
-      symbol,
+      "from " .. final_import .. " import " .. symbol,
       0,
       config.user_config.add_import_to_buf.autosave
     )
     log.debug("Added import for " .. symbol .. ": " .. final_import)
   else
-    local longest_candidate = utils.longest_string_in_list(candidates)
+    local candidate_statements = {}
+    for _, candidate in ipairs(candidates) do
+      table.insert(
+        candidate_statements,
+        "from " .. candidate .. " import " .. symbol
+      )
+    end
+    local longest_candidate = utils.longest_string_in_list(candidate_statements)
     local telescope_opts = {}
     if utils.check_plugin_installed("telescope") then
       telescope_opts = require("telescope.themes").get_cursor({
@@ -83,14 +89,14 @@ M.resolve_import_under_cursor = function()
           height = math.max(
             TELESCOPE_MIN_HEIGHT,
             math.min(
-              #candidates + TELESCOPE_HEIGHT_PADDING,
+              #candidate_statements + TELESCOPE_HEIGHT_PADDING,
               TELESCOPE_MAX_HEIGHT
             )
           ),
         },
       })
     end
-    vim.ui.select(candidates, {
+    vim.ui.select(candidate_statements, {
       prompt = "Select an import",
       format_item = function(item)
         return item .. string.format(".%s", symbol)
@@ -98,15 +104,14 @@ M.resolve_import_under_cursor = function()
       telescope = telescope_opts,
     }, function(selected)
       if selected then
-        local final_import = selected
-        log.debug("Selected import: " .. final_import)
+        local statement = selected
+        log.debug("Selected import: " .. statement)
         utils.add_import_to_buffer(
-          final_import,
-          symbol,
+          statement,
           0,
           config.user_config.add_import_to_buf.autosave
         )
-        log.debug("Added import for " .. symbol .. ": " .. final_import)
+        log.debug("Added import for " .. symbol .. ": " .. statement)
       end
     end)
   end
