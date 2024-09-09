@@ -18,6 +18,7 @@ local function venv()
   if venv_location == nil then
     log.warn("No virtual environment found.")
   end
+  log.debug("Virtual environment: ", venv_location)
   return venv_location
 end
 
@@ -32,6 +33,7 @@ local function root_dir()
       cwd
     )
   end
+  log.debug("Project root: ", p_root or cwd)
   return p_root or cwd
 end
 

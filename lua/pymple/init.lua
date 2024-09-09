@@ -37,6 +37,8 @@ local function setup(opts)
     log.new(log.off_config, true)
   end
 
+  log.debug("Current directory: ", vim.fn.getcwd())
+
   -- Validate configuration
   if not config:validate_configuration() then
     return
