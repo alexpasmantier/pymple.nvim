@@ -84,12 +84,14 @@ local function find_project_root(starting_dir, root_markers)
         if vim.fn.glob(dir .. "/src") ~= "" then
           dir = dir .. "/src"
         end
+        log.debug("Found project root: " .. dir)
         return dir
       end
     end
     dir = vim.fn.fnamemodify(dir, ":h")
     jumps = jumps + 1
   end
+  log.warn("No project root found")
   return nil
 end
 
