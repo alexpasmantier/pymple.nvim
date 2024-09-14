@@ -41,6 +41,12 @@ local function maybe_trim_logfile(logfile, max_lines)
     local lines_to_delete = num_lines - max_lines
     local sed_command =
       string.format("sed -i '' '1,%dd' %s", lines_to_delete, logfile)
+
+    local sysname = vim.uv.os_uname().sysname
+    if sysname == "Linux" then
+      sed_command = string.format("sed -i '1,%dd' %s", lines_to_delete, logfile)
+    end
+
     os.execute(sed_command)
   end
 end
