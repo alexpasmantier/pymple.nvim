@@ -91,9 +91,6 @@ M.resolve_import_under_cursor = function()
     end
     vim.ui.select(candidate_statements, {
       prompt = "Select an import",
-      format_item = function(item)
-        return item .. string.format(".%s", symbol)
-      end,
       telescope = telescope_opts,
     }, function(selected)
       if selected then
