@@ -4,6 +4,7 @@ local utils = require("pymple.utils")
 local jobs = require("pymple.resolve_imports.jobs")
 local log = require("pymple.log")
 local project = require("pymple.project")
+local config = require("pymple.config")
 
 -- classes, functions, and variables
 local class_pattern = [['^class\s+%s\b']]
@@ -74,8 +75,13 @@ end
 ---@return string[] | nil: list of candidates
 function M.resolve_python_import(symbol, current_file_path)
   local py_sys_paths = utils.get_python_sys_paths() or {}
-  if project.root then
-    table.insert(py_sys_paths, project.root)
+  local root = project.root
+    or utils.find_project_root(
+      current_file_path,
+      config.user_config.python.root_markers
+    )
+  if root then
+    table.insert(py_sys_paths, root)
   end
   local target_paths = utils.deduplicate_list(py_sys_paths)
   local gg_args = "-fCHGA -t pystrict -I "
@@ -88,7 +94,7 @@ function M.resolve_python_import(symbol, current_file_path)
 
   local import_candidates = {}
   for _, path in ipairs(candidate_paths) do
-    local _path = utils.make_relative_to(path, project.root)
+    local _path = utils.make_relative_to(path, root)
     local import_path = utils.to_import_path(_path)
     table.insert(import_candidates, import_path)
   end

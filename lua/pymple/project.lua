@@ -22,7 +22,7 @@ local function venv()
   return venv_location
 end
 
----@return string
+---@return string | nil
 local function root_dir()
   local cwd = vim.fn.getcwd()
   local p_root =
@@ -33,8 +33,8 @@ local function root_dir()
       cwd
     )
   end
-  log.debug("Project root: ", p_root or cwd)
-  return p_root or cwd
+  log.debug("Project root: ", p_root)
+  return p_root
 end
 
 setmetatable(Project, {
