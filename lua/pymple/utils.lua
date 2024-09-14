@@ -65,18 +65,22 @@ function M.check_plugin_installed(plugin_name)
   return lualib_installed(plugin_name)
 end
 
-local MAX_UPWARD_JUMPS = 5
+local MAX_UPWARD_JUMPS = 10
 
 ---Find the root of a python project
----@param starting_dir string | nil: The directory to start searching from
+---@param starting_dir string: The directory to start searching from
 ---@return string | nil: The root of the python project
 local function find_project_root(starting_dir, root_markers)
   local pythonpath = os.getenv("PYTHONPATH")
   if pythonpath then
     return pythonpath
   end
-
-  local dir = starting_dir or vim.fn.getcwd()
+  local dir
+  if Path:new(starting_dir):is_dir() then
+    dir = starting_dir
+  else
+    dir = vim.fn.fnamemodify(starting_dir, ":h")
+  end
   local jumps = 0
   while dir ~= "/" and jumps <= MAX_UPWARD_JUMPS do
     for _, marker in ipairs(root_markers) do

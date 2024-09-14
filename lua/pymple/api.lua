@@ -123,8 +123,9 @@ M.update_imports = function(source, destination, opts)
       .. " in filetypes: "
       .. vim.inspect(opts.filetypes)
   )
-  local r_jobs =
-    udim.prepare_jobs(source, destination, opts.filetypes, project.root)
+  local root = project.root
+    or utils.find_project_root(source, config.user_config.python.root_markers)
+  local r_jobs = udim.prepare_jobs(source, destination, opts.filetypes, root)
   if #r_jobs == 0 then
     log.info("No jobs to run.")
     return
