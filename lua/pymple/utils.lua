@@ -71,10 +71,6 @@ local MAX_UPWARD_JUMPS = 10
 ---@param starting_dir string: The directory to start searching from
 ---@return string | nil: The root of the python project
 local function find_project_root(starting_dir, root_markers)
-  local pythonpath = os.getenv("PYTHONPATH")
-  if pythonpath then
-    return pythonpath
-  end
   local dir
   if Path:new(starting_dir):is_dir() then
     dir = starting_dir
