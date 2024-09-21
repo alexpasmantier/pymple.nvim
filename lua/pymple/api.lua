@@ -58,20 +58,17 @@ M.resolve_import_under_cursor = function()
     )
     return
   elseif #candidates == 1 then
-    local final_import = candidates[1]
+    local final_import = utils.to_import_statement(candidates[1])
     utils.add_import_to_buffer(
-      "from " .. final_import .. " import " .. symbol,
+      final_import,
       0,
       config.user_config.add_import_to_buf.autosave
     )
-    log.debug("Added import for " .. symbol .. ": " .. final_import)
   else
     local candidate_statements = {}
     for _, candidate in ipairs(candidates) do
-      table.insert(
-        candidate_statements,
-        "from " .. candidate .. " import " .. symbol
-      )
+      local import_statement = utils.to_import_statement(candidate)
+      table.insert(candidate_statements, import_statement)
     end
     local longest_candidate = utils.longest_string_in_list(candidate_statements)
     local telescope_opts = {}
