@@ -112,12 +112,12 @@ function M.resolve_python_import(symbol, current_file_path)
   end
 
   for _, path in ipairs(modules_paths) do
-    log.debug("root: " .. root)
-    log.debug("path: " .. path)
     local _path = utils.make_relative_to(path, root)
     local reference_path = utils.to_python_reference_path(_path)
     table.insert(result, reference_path)
   end
+
+  result = utils.deduplicate_list(result)
 
   table.sort(result, function(a, b)
     -- TODO: add other sorting rules (e.g. alphabetical, private modules, etc.)
