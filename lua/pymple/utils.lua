@@ -97,12 +97,35 @@ end
 
 M.find_project_root = find_project_root
 
----Converts a path to an import path
+---Converts a path to a python reference path
 ---@param module_path string: The path to a python module
----@return string: The import path for the module
-function M.to_import_path(module_path)
-  local result, _ = module_path:gsub("/", "."):gsub("%.py$", "")
+---@param python_symbol string | nil: The symbol to reference
+---@return string: The python reference path
+function M.to_python_reference_path(module_path, python_symbol)
+  local result, _ =
+    module_path:gsub("/", "."):gsub("%.py$", ""):gsub(".__init__", "")
+  if python_symbol then
+    result = result .. "." .. python_symbol
+  end
   return result
+end
+
+---Generate import string from reference path
+---@param reference_path string: The reference path
+---@return string: The import string
+function M.to_import_statement(reference_path)
+  -- Split, but keep "__init__" as part of the path
+  local parts = vim.split(reference_path, ".", { plain = true })
+  -- If there's only one part, this is a simple import
+  if #parts == 1 then
+    return "import " .. parts[1]
+  end
+  local module_name = parts[#parts]
+  table.remove(parts, #parts)
+
+  local module_path = table.concat(parts, ".")
+
+  return "from " .. module_path .. " import " .. module_name
 end
 
 ---Splits an import path on the last separator

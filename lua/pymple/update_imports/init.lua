@@ -55,7 +55,7 @@ M.make_monolithic_imports_job = make_monolithic_imports_job
 function M.prepare_jobs(source, destination, filetypes, python_root)
   local s, d = unpack(
     utils.map(
-      utils.to_import_path,
+      utils.to_python_reference_path,
       utils.make_files_relative({ source, destination }, python_root),
       {}
     )
