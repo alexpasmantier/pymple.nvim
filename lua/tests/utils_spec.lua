@@ -29,10 +29,25 @@ describe("find_project_root", function()
   end)
 end)
 
-describe("to_import_path", function()
+describe("to_python_reference_path", function()
   it("std", function()
-    local result = utils.to_import_path("foo/bar/baz.py")
+    local result = utils.to_python_reference_path("foo/bar/baz.py")
     assert.equals("foo.bar.baz", result)
+  end)
+
+  it("__init__.py", function()
+    local result = utils.to_python_reference_path("foo/bar/__init__.py")
+    assert.equals("foo.bar", result)
+  end)
+
+  it("python_symbol", function()
+    local result = utils.to_python_reference_path("foo/bar/baz.py", "qux")
+    assert.equals("foo.bar.baz.qux", result)
+  end)
+
+  it("__init__ and python_symbol", function()
+    local result = utils.to_python_reference_path("foo/bar/__init__.py", "qux")
+    assert.equals("foo.bar.qux", result)
   end)
 end)
 

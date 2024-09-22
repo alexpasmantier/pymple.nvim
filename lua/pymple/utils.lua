@@ -97,14 +97,6 @@ end
 
 M.find_project_root = find_project_root
 
----Converts a path to an import path
----@param module_path string: The path to a python module
----@return string: The import path for the module
-function M.to_import_path(module_path)
-  local result, _ = module_path:gsub("/", "."):gsub("%.py$", "")
-  return result
-end
-
 ---Converts a path to a python reference path
 ---@param module_path string: The path to a python module
 ---@param python_symbol string | nil: The symbol to reference
