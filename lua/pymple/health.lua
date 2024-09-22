@@ -27,6 +27,12 @@ local required_binaries = {
     min_version = "0.2.23",
   },
   {
+    name = "fd",
+    url = "[sharkdp/fd](https://github.com/sharkdp/fd)",
+    optional = false,
+    binaries = { "fd" },
+  },
+  {
     name = "sed",
     url = "[https://www.gnu.org/software/sed](https://www.gnu.org/software/sed/manual/sed.html)",
     optional = false,
