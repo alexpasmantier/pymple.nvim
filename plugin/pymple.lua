@@ -1,6 +1,8 @@
 local utils = require("pymple.utils")
 local health = require("pymple.health")
 
+PYMPLE_BINARIES = {}
+
 for _, required_binary in ipairs(health.required_binaries) do
   local installed, version = health.check_binary_installed(required_binary)
 
@@ -12,6 +14,8 @@ for _, required_binary in ipairs(health.required_binaries) do
         .. "or run `:PympleBuild`. For more information, see "
         .. required_binary.url
     )
+  else
+    PYMPLE_BINARIES[required_binary.name] = version
   end
 
   if

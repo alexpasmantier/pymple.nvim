@@ -4,12 +4,12 @@ Pymple adds missing common Python IDE features for Neovim when dealing with impo
 - 🦀 **code-action-like import resolution**
 
 ## tl;dr
-👉 **Automatic import updates on file/dir move/rename that currently supports `neo-tree`, `nvim-tree` and `oil.nvim`.**
+👉 **Automatic import updates on file/dir move/rename that currently supports `neo-tree`, `nvim-tree`, `oil.nvim` and `yazi.nvim`.**
 
-### with `oil.nvim`
+### Example with `oil.nvim`
 https://github.com/user-attachments/assets/dc294f74-c1f2-48e2-8e7f-68399b5a391b
 
-### with `neo-tree.nvim`
+### Example with `neo-tree.nvim`
 https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
 
 

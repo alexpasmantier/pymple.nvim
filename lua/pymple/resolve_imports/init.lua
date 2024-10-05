@@ -5,6 +5,7 @@ local jobs = require("pymple.resolve_imports.jobs")
 local log = require("pymple.log")
 local project = require("pymple.project")
 local config = require("pymple.config")
+local health = require("pymple.health")
 
 -- classes, functions, and variables
 local class_pattern = [['^class\s+%s\b']]
@@ -84,11 +85,18 @@ function M.resolve_python_import(symbol, current_file_path)
     table.insert(py_sys_paths, root)
   end
   local target_paths = utils.deduplicate_list(py_sys_paths)
-  local gg_args = "-fCHGA -t pystrict -I "
+  local gg_flags
+  if
+    health.version_satisfies_constraint(PYMPLE_BINARIES["gg"], "0.5.3", nil)
+  then
+    gg_flags = "-fCHGAD -t pystrict -I "
+  else
+    gg_flags = "-fCHGA -t pystrict -I "
+  end
+  local gg_args = gg_flags
     .. current_file_path
     .. " "
     .. build_symbol_regexes(symbol, IMPORTABLE_SYMBOLS_PATTERNS)
-  --- fd -H -I -p "/sqlalchemy/__init__.py$|/sqlalchemy.py$" ~.venv/lib/python3.11/site-package
   local fd_args = '-H -I -p "/'
     .. symbol
     .. "/__init__.py$|/"
@@ -107,14 +115,18 @@ function M.resolve_python_import(symbol, current_file_path)
 
   for _, path in ipairs(candidate_paths) do
     local _path = utils.make_relative_to(path, root)
-    local reference_path = utils.to_python_reference_path(_path, symbol)
-    table.insert(result, reference_path)
+    if not string.match(_path, "^/") then
+      local reference_path = utils.to_python_reference_path(_path, symbol)
+      table.insert(result, reference_path)
+    end
   end
 
   for _, path in ipairs(modules_paths) do
     local _path = utils.make_relative_to(path, root)
-    local reference_path = utils.to_python_reference_path(_path)
-    table.insert(result, reference_path)
+    if not string.match(_path, "^/") then
+      local reference_path = utils.to_python_reference_path(_path)
+      table.insert(result, reference_path)
+    end
   end
 
   result = utils.deduplicate_list(result)
