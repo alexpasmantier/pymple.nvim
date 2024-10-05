@@ -99,8 +99,8 @@ local function compare_versions(version1, version2)
 end
 
 ---@param version string
----@param min_version string
----@param max_version string
+---@param min_version string | nil
+---@param max_version string | nil
 local function version_satisfies_constraint(version, min_version, max_version)
   if not min_version and not max_version then
     return true

@@ -50,6 +50,20 @@ local setup_oil_hooks = function(opts)
   })
 end
 
+---@alias YaziNeovimEvent.YaziRenamedOrMovedData {changes: table<string, string>} # a table of old paths to new paths
+
+local setup_yazi_hooks = function(opts)
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "YaziRenamedOrMoved",
+    ---@param event {data: YaziNeovimEvent.YaziRenamedOrMovedData}
+    callback = function(event)
+      for before, after in pairs(event.data.changes) do
+        api.update_imports(before, after, opts)
+      end
+    end,
+  })
+end
+
 M.setup = function()
   local neotree_installed, events = pcall(require, "neo-tree.events")
   if neotree_installed then
@@ -67,6 +81,12 @@ M.setup = function()
   if oil_installed then
     log.info("Found oil installation, hooking up events")
     setup_oil_hooks(config.user_config.update_imports)
+  end
+
+  local yazi_installed, _ = pcall(require, "yazi")
+  if yazi_installed then
+    log.info("Found yazi installation, hooking up events")
+    setup_yazi_hooks(config.user_config.update_imports)
   end
 end
 
