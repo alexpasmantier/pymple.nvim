@@ -4,13 +4,17 @@ Pymple adds missing common Python IDE features for Neovim when dealing with impo
 - 🦀 **code-action-like import resolution**
 
 ## tl;dr
-👉 **Automatic import updates on file/dir move/rename that currently supports `neo-tree`, `nvim-tree`, `oil.nvim` and `yazi.nvim`.**
-
-### Example with `oil.nvim`
-https://github.com/user-attachments/assets/dc294f74-c1f2-48e2-8e7f-68399b5a391b
+🪄 **Automatic import updates on file/dir move/rename with support for:**
+- `neo-tree` (https://github.com/nvim-neo-tree/neo-tree.nvim)
+- `nvim-tree` (https://github.com/nvim-tree/nvim-tree.lua)
+- `oil.nvim` (https://github.com/stevearc/oil.nvim)
+- `yazi.nvim` (https://github.com/mikavilpas/yazi.nvim)
 
 ### Example with `neo-tree.nvim`
 https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
+
+### Example with `oil.nvim`
+https://github.com/user-attachments/assets/dc294f74-c1f2-48e2-8e7f-68399b5a391b
 
 
 ## 📦 Installation
@@ -62,6 +66,7 @@ The following features are currently available:
     - ✅ `neo-tree`
     - ✅ `nvim-tree`
     - ✅ `oil.nvim`
+    - ✅ `yazi.nvim`
 - Automatic missing import resolution for symbol under cursor:
   - ✅ searches in current workspace
   - ✅ searches in virtual environments
@@ -73,7 +78,7 @@ The following features are currently available:
 
 ## 🚀 Usage
 ### 🦀 Import updates on file move/rename
-If you're using a file explorer such as `neo-tree`, `nvim-tree` or `oil.nvim`, pymple will automatically detect it and setup the appropriate hooks.  
+If you're using a file explorer such as `neo-tree`, `nvim-tree`, `oil.nvim` or `yazi.nvim`, pymple will automatically detect it and setup the appropriate hooks.  
 
 When you rename or move a file or directory, you'll be prompted with a confirmation window and be able to preview the pending changes while discarding the ones you don't want.
 
