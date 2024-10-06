@@ -148,7 +148,14 @@ M.update_imports = function(source, destination, opts)
       log.debug("Confirmation dialog closed.")
     end
   )
+  local mini_files_installed, mini_files = pcall(require, "mini.files")
+  -- Close mini.files if it's open
+  if mini_files_installed then
+    mini_files.synchronize()
+    mini_files.close()
+  end
   confirmation_dialog:mount()
+  vim.api.nvim_set_current_win(confirmation_dialog.winid)
 end
 
 return M

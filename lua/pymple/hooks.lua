@@ -64,6 +64,16 @@ local setup_yazi_hooks = function(opts)
   })
 end
 
+local setup_mini_files_hooks = function(opts)
+  vim.api.nvim_create_autocmd("User", {
+    pattern = { "MiniFilesActionRename", "MiniFilesActionMove" },
+    ---@param event {data: {action: string, from: string, to: string}}
+    callback = function(event)
+      api.update_imports(event.data.from, event.data.to, opts)
+    end,
+  })
+end
+
 M.setup = function()
   local neotree_installed, events = pcall(require, "neo-tree.events")
   if neotree_installed then
@@ -87,6 +97,12 @@ M.setup = function()
   if yazi_installed then
     log.info("Found yazi installation, hooking up events")
     setup_yazi_hooks(config.user_config.update_imports)
+  end
+
+  local mini_files_installed, _ = pcall(require, "mini.files")
+  if mini_files_installed then
+    log.info("Found mini.files installation, hooking up events")
+    setup_mini_files_hooks(config.user_config.update_imports)
   end
 end
 
