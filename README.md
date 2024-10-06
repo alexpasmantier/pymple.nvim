@@ -9,6 +9,7 @@ Pymple adds missing common Python IDE features for Neovim when dealing with impo
 - `nvim-tree` (https://github.com/nvim-tree/nvim-tree.lua)
 - `oil.nvim` (https://github.com/stevearc/oil.nvim)
 - `yazi.nvim` (https://github.com/mikavilpas/yazi.nvim)
+- `mini.nvim` (https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-files.md)
 
 ### Example with `neo-tree.nvim`
 https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
@@ -67,6 +68,7 @@ The following features are currently available:
     - ✅ `nvim-tree`
     - ✅ `oil.nvim`
     - ✅ `yazi.nvim`
+    - ✅ `mini.files`
 - Automatic missing import resolution for symbol under cursor:
   - ✅ searches in current workspace
   - ✅ searches in virtual environments
@@ -78,7 +80,7 @@ The following features are currently available:
 
 ## 🚀 Usage
 ### 🦀 Import updates on file move/rename
-If you're using a file explorer such as `neo-tree`, `nvim-tree`, `oil.nvim` or `yazi.nvim`, pymple will automatically detect it and setup the appropriate hooks.  
+If you're using a file explorer such as `neo-tree`, `nvim-tree`, `oil.nvim`, `yazi.nvim` or `mini.files`, pymple will automatically detect it and setup the appropriate hooks.  
 
 When you rename or move a file or directory, you'll be prompted with a confirmation window and be able to preview the pending changes while discarding the ones you don't want.
 
