@@ -83,21 +83,6 @@ local function lualib_installed(lib_name)
   return res
 end
 
-local function compare_versions(version1, version2)
-  local version1_parts = utils.split_string(version1, ".")
-  local version2_parts = utils.split_string(version2, ".")
-  for i, part in ipairs(version1_parts) do
-    local part_num = tonumber(part)
-    local other_part = tonumber(version2_parts[i]) or 0
-    if part_num > other_part then
-      return 1
-    elseif part_num < other_part then
-      return -1
-    end
-  end
-  return 0
-end
-
 ---@param version string
 ---@param min_version string | nil
 ---@param max_version string | nil
@@ -105,10 +90,13 @@ local function version_satisfies_constraint(version, min_version, max_version)
   if not min_version and not max_version then
     return true
   else
-    min_version = min_version or "0"
+    min_version = min_version or "0.0"
     max_version = max_version or "9999"
-    return compare_versions(version, min_version) >= 0
-      and compare_versions(version, max_version) <= 0
+    local parsed_version = vim.version.parse(version)
+    local parsed_min_version = vim.version.parse(min_version)
+    local parsed_max_version = vim.version.parse(max_version)
+    return vim.version.ge(parsed_version, parsed_min_version)
+      and vim.version.le(parsed_version, parsed_max_version)
   end
 end
 

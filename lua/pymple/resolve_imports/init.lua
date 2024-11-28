@@ -89,9 +89,9 @@ function M.resolve_python_import(symbol, current_file_path)
   if
     health.version_satisfies_constraint(PYMPLE_BINARIES["gg"], "0.5.3", nil)
   then
-    gg_flags = "-fCHGAD -t pystrict -I "
-  else
     gg_flags = "-fCHGA -t pystrict -I "
+  else
+    gg_flags = "-fCHGAD -t pystrict -I "
   end
   local gg_args = gg_flags
     .. current_file_path
