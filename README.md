@@ -98,6 +98,36 @@ https://github.com/user-attachments/assets/d10c97dc-a2cd-4a0c-8c4f-d34456362e8b
 
 If you're not using a file explorer, the current alternative would be to manually call `:PympleUpdateImports <source> <destination>` after the file rename operation which will bring up the confirmation window mentioned above.
 
+### 🍰 Using LazyVim
+
+When running **LazyVim**, you may need to forward Neo‑tree’s rename events to *pymple* so that automatic import updates kick in.  
+Drop the snippet below into your `lazy.nvim` spec (e.g. `plugins/neo-tree.lua`):
+
+```lua
+{
+  "nvim-neo-tree/neo-tree.nvim",
+  opts = function(_, opts)
+    local api    = require("pymple.api")
+    local config = require("pymple.config")
+
+    local function on_move(args)
+      api.update_imports(
+        args.source,
+        args.destination,
+        config.user_config.update_imports
+      )
+    end
+
+    local events = require("neo-tree.events")
+    opts.event_handlers = opts.event_handlers or {}
+    vim.list_extend(opts.event_handlers, {
+      { event = events.FILE_MOVED,   handler = on_move },
+      { event = events.FILE_RENAMED, handler = on_move },
+    })
+  end,
+},
+```
+
 ### 🦀 Import resolution
 By default, pymple will setup a keymap for this (`<leader>li`) which you can change in the configuration:
 ```lua
