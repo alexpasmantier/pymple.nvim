@@ -81,7 +81,8 @@ local function find_project_root(starting_dir, root_markers)
   while dir ~= "/" and jumps <= MAX_UPWARD_JUMPS do
     for _, marker in ipairs(root_markers) do
       if vim.fn.glob(dir .. "/" .. marker) ~= "" then
-        if vim.fn.glob(dir .. "/src") ~= "" then
+        local src_path = Path:new(dir):joinpath("src")
+        if src_path:is_dir() and not src_path:joinpath("__init__.py"):exists() then
           dir = dir .. "/src"
         end
         log.debug("Found project root: " .. dir)

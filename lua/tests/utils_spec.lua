@@ -4,12 +4,21 @@ local cwd = vim.fn.getcwd()
 local mock = require("luassert.mock")
 
 describe("find_project_root", function()
+  local function with_temp_fixture(test_name, setup_func, test_func)
+    local temp_dir = vim.fn.stdpath("data") .. "/pymple_test_tmp/" .. test_name
+    local Path = require("plenary.path")
+    Path:new(temp_dir):mkdir({ parents = true })
+    setup_func(temp_dir)
+    test_func(temp_dir)
+    Path:new(temp_dir):rm({ recursive = true })
+  end
+
   it("src present", function()
     local result = utils.find_project_root(
       FIXTURES_PATH .. "/project_with_src/src",
       { "pyproject.toml" }
     )
-    assert.equals(FIXTURES_PATH .. "/project_with_src/src", result)
+    assert.equals(FIXTURES_PATH .. "/project_with_src", result)
   end)
 
   it("no src", function()
@@ -26,6 +35,39 @@ describe("find_project_root", function()
       { "pyproject.toml" }
     )
     assert.equals(nil, result)
+  end)
+
+  it("src is a module (with __init__.py)", function()
+    with_temp_fixture("src_as_module", function(temp_dir)
+      local Path = require("plenary.path")
+      local project_root = Path:new(temp_dir)
+      local src_dir = project_root:joinpath("src")
+      src_dir:mkdir({ parents = true })
+      src_dir:joinpath("__init__.py"):touch()
+      project_root:joinpath("pyproject.toml"):touch()
+    end, function(temp_dir)
+      local result = utils.find_project_root(
+        temp_dir .. "/src/module.py",
+        { "pyproject.toml" }
+      )
+      assert.equals(temp_dir, result)
+    end)
+  end)
+
+  it("src is a source layout (without __init__.py)", function()
+    with_temp_fixture("src_as_layout", function(temp_dir)
+      local Path = require("plenary.path")
+      local project_root = Path:new(temp_dir)
+      local src_dir = project_root:joinpath("src")
+      src_dir:mkdir({ parents = true })
+      project_root:joinpath("pyproject.toml"):touch()
+    end, function(temp_dir)
+      local result = utils.find_project_root(
+        temp_dir .. "/src/module.py",
+        { "pyproject.toml" }
+      )
+      assert.equals(temp_dir .. "/src", result)
+    end)
   end)
 end)
 
